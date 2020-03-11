@@ -5,7 +5,7 @@ import me.jellysquid.mods.phosphor.common.chunk.ExtendedLevelPropagator;
 import me.jellysquid.mods.phosphor.common.util.collections.PendingLevelUpdateTracker;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.math.MathHelper;
-import net.minecraft.world.chunk.light.LevelPropagator;
+import net.minecraft.world.lighting.LevelBasedGraph;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
@@ -14,14 +14,14 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(LevelPropagator.class)
-public abstract class MixinLevelPropagator implements ExtendedLevelPropagator {
+@Mixin(LevelBasedGraph.class)
+public abstract class MixinLevelBasedGraph implements ExtendedLevelPropagator {
     @Shadow
-    private int minPendingLevel;
+    private int minLevelToUpdate;
 
     @Shadow
     @Final
-    private Long2ByteMap pendingUpdates;
+    private Long2ByteMap propagationLevels;
 
     @Shadow
     protected abstract int getLevel(long id);
@@ -34,19 +34,19 @@ public abstract class MixinLevelPropagator implements ExtendedLevelPropagator {
     private int levelCount;
 
     @Shadow
-    private volatile boolean hasPendingUpdates;
+    private volatile boolean needsUpdate;
 
     @Shadow
     protected abstract void setLevel(long id, int level);
 
     @Shadow
-    protected abstract void propagateLevel(long id, int targetLevel, boolean mergeAsMin);
+    protected abstract void notifyNeighbors(long id, int targetLevel, boolean mergeAsMin);
 
     @Shadow
-    protected abstract int getPropagatedLevel(long sourceId, long targetId, int level);
+    protected abstract int computeLevel(long sourceId, long targetId, int level);
 
     @Shadow
-    protected abstract void updateLevel(long sourceId, long id, int level, int currentLevel, int pendingLevel, boolean decrease);
+    protected abstract void propagateLevel(long sourceId, long id, int level, int currentLevel, int pendingLevel, boolean decrease);
 
     private PendingLevelUpdateTracker[] pendingUpdateSet;
 
@@ -64,13 +64,13 @@ public abstract class MixinLevelPropagator implements ExtendedLevelPropagator {
      * @author JellySquid
      */
     @Overwrite
-    private void increaseMinPendingLevel(int min) {
-        int prevMin = this.minPendingLevel;
-        this.minPendingLevel = min;
+    private void updateMinLevel(int min) {
+        int prevMin = this.minLevelToUpdate;
+        this.minLevelToUpdate = min;
 
         for (int level = prevMin + 1; level < min; ++level) {
             if (!(this.pendingUpdateSet[level].queueReadIdx >= this.pendingUpdateSet[level].queueWriteIdx)) {
-                this.minPendingLevel = level;
+                this.minLevelToUpdate = level;
 
                 break;
             }
@@ -83,16 +83,16 @@ public abstract class MixinLevelPropagator implements ExtendedLevelPropagator {
      * @author JellySquid
      */
     @Overwrite
-    public void removePendingUpdate(long id) {
-        int level = this.pendingUpdates.get(id) & 255;
+    public void cancelUpdate(long id) {
+        int level = this.propagationLevels.get(id) & 255;
 
         if (level != 255) {
             int prevLevel = this.getLevel(id);
             int nextLevel = this.minLevel(prevLevel, level);
 
-            this.removePendingUpdate(id, nextLevel, this.levelCount, true);
+            this.removeToUpdate(id, nextLevel, this.levelCount, true);
 
-            this.hasPendingUpdates = this.minPendingLevel < this.levelCount;
+            this.needsUpdate = this.minLevelToUpdate < this.levelCount;
         }
     }
 
@@ -101,15 +101,15 @@ public abstract class MixinLevelPropagator implements ExtendedLevelPropagator {
      * @author JellySquid
      */
     @Overwrite
-    private void removePendingUpdate(long id, int level, int maxLevel, boolean removeFromLevelMap) {
+    private void removeToUpdate(long id, int level, int maxLevel, boolean removeFromLevelMap) {
         if (removeFromLevelMap) {
-            this.pendingUpdates.remove(id);
+            this.propagationLevels.remove(id);
         }
 
         this.pendingUpdateSet[level].remove(id);
 
-        if (this.pendingUpdateSet[level].queueReadIdx >= this.pendingUpdateSet[level].queueWriteIdx && this.minPendingLevel == level) {
-            this.increaseMinPendingLevel(maxLevel);
+        if (this.pendingUpdateSet[level].queueReadIdx >= this.pendingUpdateSet[level].queueWriteIdx && this.minLevelToUpdate == level) {
+            this.updateMinLevel(maxLevel);
         }
     }
 
@@ -118,13 +118,13 @@ public abstract class MixinLevelPropagator implements ExtendedLevelPropagator {
      * @author JellySquid
      */
     @Overwrite
-    private void addPendingUpdate(long id, int level, int targetLevel) {
-        this.pendingUpdates.put(id, (byte) level);
+    private void addToUpdate(long id, int level, int targetLevel) {
+        this.propagationLevels.put(id, (byte) level);
 
         this.pendingUpdateSet[targetLevel].add(id);
 
-        if (this.minPendingLevel > targetLevel) {
-            this.minPendingLevel = targetLevel;
+        if (this.minLevelToUpdate > targetLevel) {
+            this.minLevelToUpdate = targetLevel;
         }
     }
 
@@ -133,13 +133,13 @@ public abstract class MixinLevelPropagator implements ExtendedLevelPropagator {
      * @author JellySquid
      */
     @Overwrite
-    public final int applyPendingUpdates(int maxSteps) {
-        if (this.minPendingLevel >= this.levelCount) {
+    public final int processUpdates(int maxSteps) {
+        if (this.minLevelToUpdate >= this.levelCount) {
             return maxSteps;
         }
 
-        while (this.minPendingLevel < this.levelCount && maxSteps > 0) {
-            PendingLevelUpdateTracker set = this.pendingUpdateSet[this.minPendingLevel];
+        while (this.minLevelToUpdate < this.levelCount && maxSteps > 0) {
+            PendingLevelUpdateTracker set = this.pendingUpdateSet[this.minLevelToUpdate];
 
             int qIdx = set.queueReadIdx;
 
@@ -159,43 +159,43 @@ public abstract class MixinLevelPropagator implements ExtendedLevelPropagator {
                 }
 
                 int from = MathHelper.clamp(this.getLevel(pos), 0, this.levelCount - 1);
-                int to = this.pendingUpdates.remove(pos) & 255;
+                int to = this.propagationLevels.remove(pos) & 255;
 
                 if (to < from) {
                     this.setLevel(pos, to);
-                    this.propagateLevel(pos, to, true);
+                    this.notifyNeighbors(pos, to, true);
                 } else if (to > from) {
-                    this.addPendingUpdate(pos, to, this.minLevel(this.levelCount - 1, to));
+                    this.addToUpdate(pos, to, this.minLevel(this.levelCount - 1, to));
 
                     this.setLevel(pos, this.levelCount - 1);
-                    this.propagateLevel(pos, from, false);
+                    this.notifyNeighbors(pos, from, false);
                 }
             }
 
             set.queueReadIdx = qIdx;
 
             if (set.queueReadIdx >= set.queueWriteIdx) {
-                this.increaseMinPendingLevel(this.levelCount);
+                this.updateMinLevel(this.levelCount);
 
                 set.clear();
             }
         }
 
-        this.hasPendingUpdates = this.minPendingLevel < this.levelCount;
+        this.needsUpdate = this.minLevelToUpdate < this.levelCount;
 
         return maxSteps;
     }
 
     // [VanillaCopy] LevelPropagator#propagateLevel(long, long, int, boolean)
     @Override
-    public void propagateLevel(long sourceId, BlockState sourceState, long targetId, int level, boolean decrease) {
-        int pendingLevel = this.pendingUpdates.get(targetId) & 0xFF;
+    public void notifyNeighbors(long sourceId, BlockState sourceState, long targetId, int level, boolean decrease) {
+        int pendingLevel = this.propagationLevels.get(targetId) & 0xFF;
 
-        int propagatedLevel = this.getPropagatedLevel(sourceId, sourceState, targetId, level);
+        int propagatedLevel = this.getEdgeLevel(sourceId, sourceState, targetId, level);
         int clampedLevel = MathHelper.clamp(propagatedLevel, 0, this.levelCount - 1);
 
         if (decrease) {
-            this.updateLevel(sourceId, targetId, clampedLevel, this.getLevel(targetId), pendingLevel, true);
+            this.propagateLevel(sourceId, targetId, clampedLevel, this.getLevel(targetId), pendingLevel, true);
 
             return;
         }
@@ -212,12 +212,12 @@ public abstract class MixinLevelPropagator implements ExtendedLevelPropagator {
         }
 
         if (clampedLevel == resultLevel) {
-            this.updateLevel(sourceId, targetId, this.levelCount - 1, flag ? resultLevel : this.getLevel(targetId), pendingLevel, false);
+            this.propagateLevel(sourceId, targetId, this.levelCount - 1, flag ? resultLevel : this.getLevel(targetId), pendingLevel, false);
         }
     }
 
     @Override
-    public int getPropagatedLevel(long sourceId, BlockState sourceState, long targetId, int level) {
-        return this.getPropagatedLevel(sourceId, targetId, level);
+    public int getEdgeLevel(long sourceId, BlockState sourceState, long targetId, int level) {
+        return this.computeLevel(sourceId, targetId, level);
     }
 }

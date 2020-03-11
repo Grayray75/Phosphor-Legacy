@@ -1,0 +1,1 @@
+MixinConnector: me.jellysquid.mods.phosphor.mixin.PhosphorMixinConnector

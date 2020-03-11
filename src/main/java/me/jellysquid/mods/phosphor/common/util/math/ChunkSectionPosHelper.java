@@ -1,10 +1,10 @@
 package me.jellysquid.mods.phosphor.common.util.math;
 
-import net.minecraft.util.math.ChunkSectionPos;
+import net.minecraft.util.math.SectionPos;
 
 public class ChunkSectionPosHelper {
     /**
-     * Quicker than re-encoding an integer {@link ChunkSectionPos} when you only need to update one coordinate.
+     * Quicker than re-encoding an integer {@link SectionPos} when you only need to update one coordinate.
      *
      * @param pos The integer position containing the old X/Z coordinate values
      * @param y   The new y-coordinate to update {@param pos} with

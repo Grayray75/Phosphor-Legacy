@@ -1,6 +1,6 @@
 package me.jellysquid.mods.phosphor.mixin.chunk;
 
-import net.minecraft.world.chunk.ChunkNibbleArray;
+import net.minecraft.world.chunk.NibbleArray;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
@@ -11,18 +11,18 @@ import org.spongepowered.asm.mixin.Shadow;
  * <p>
  * TODO: Is it if faster to always initialize this with a dummy array and then copy-on-write?
  */
-@Mixin(ChunkNibbleArray.class)
-public abstract class MixinChunkNibbleArray {
+@Mixin(NibbleArray.class)
+public abstract class MixinNibbleArray {
     @Shadow
-    protected byte[] byteArray;
+    protected byte[] data;
 
     /**
      * @reason Avoid an additional branch.
      * @author JellySquid
      */
     @Overwrite
-    private int get(int idx) {
-        if (this.byteArray == null) {
+    private int getFromIndex(int idx) {
+        if (this.data == null) {
             return 0;
         }
 
@@ -30,7 +30,7 @@ public abstract class MixinChunkNibbleArray {
         int byteIdx = idx >> 1;
         int shift = nibbleIdx << 2;
 
-        return (this.byteArray[byteIdx] >>> shift) & 15;
+        return (this.data[byteIdx] >>> shift) & 15;
     }
 
     /**
@@ -38,19 +38,19 @@ public abstract class MixinChunkNibbleArray {
      * @author JellySquid
      */
     @Overwrite
-    private void set(int idx, int value) {
-        if (this.byteArray == null) {
-            this.byteArray = new byte[2048];
+    private void setIndex(int idx, int value) {
+        if (this.data == null) {
+            this.data = new byte[2048];
         }
 
         int nibbleIdx = idx & 1;
         int byteIdx = idx >> 1;
         int shift = nibbleIdx << 2;
 
-        int b = this.byteArray[byteIdx];
+        int b = this.data[byteIdx];
         int ret = (b & ~(15 << shift)) | (value & 15) << shift;
 
-        this.byteArray[byteIdx] = (byte) ret;
+        this.data[byteIdx] = (byte) ret;
     }
 
 

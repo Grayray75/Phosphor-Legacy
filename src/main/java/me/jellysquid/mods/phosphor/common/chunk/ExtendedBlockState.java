@@ -1,9 +1,9 @@
 package me.jellysquid.mods.phosphor.common.chunk;
 
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.world.BlockView;
+import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.world.IBlockReader;
 
 public interface ExtendedBlockState {
     /**
@@ -15,7 +15,7 @@ public interface ExtendedBlockState {
      * Creates a new VoxelShape which represents the light volume for the block in the specified context. This
      * will not be cached.
      */
-    VoxelShape getDynamicExtrudedFace(BlockView view, BlockPos pos, Direction dir);
+    VoxelShape getDynamicExtrudedFace(IBlockReader view, BlockPos pos, Direction dir);
 
     /**
      * @return True if the block state dynamically adjusts its light opacity.
@@ -31,5 +31,5 @@ public interface ExtendedBlockState {
      * @return The dynamic light opacity for this state at the specified location in the world. This will not be
      * cached.
      */
-    int getDynamicLightOpacity(BlockView view, BlockPos pos);
+    int getDynamicLightOpacity(IBlockReader view, BlockPos pos);
 }

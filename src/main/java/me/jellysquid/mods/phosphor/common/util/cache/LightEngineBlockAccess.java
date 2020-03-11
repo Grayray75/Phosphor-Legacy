@@ -3,21 +3,21 @@ package me.jellysquid.mods.phosphor.common.util.cache;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.ChunkPos;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.ChunkProvider;
 import net.minecraft.world.chunk.ChunkSection;
+import net.minecraft.world.chunk.IChunk;
+import net.minecraft.world.chunk.IChunkLightProvider;
 
 import java.util.Arrays;
 
 public class LightEngineBlockAccess {
     private static final BlockState DEFAULT_STATE = Blocks.AIR.getDefaultState();
 
-    private final ChunkProvider chunkProvider;
+    private final IChunkLightProvider chunkProvider;
 
     private final long[] cachedCoords = new long[2];
     private final ChunkSection[][] cachedSectionArrays = new ChunkSection[2][];
 
-    public LightEngineBlockAccess(ChunkProvider provider) {
+    public LightEngineBlockAccess(IChunkLightProvider provider) {
         this.chunkProvider = provider;
     }
 
@@ -40,7 +40,7 @@ public class LightEngineBlockAccess {
     private ChunkSection[] getCachedSection(int x, int z) {
         long[] cachedCoords = this.cachedCoords;
 
-        long coord = ChunkPos.toLong(x, z);
+        long coord = ChunkPos.asLong(x, z);
 
         for (int i = 0; i < cachedCoords.length; i++) {
             if (cachedCoords[i] == coord) {
@@ -59,13 +59,13 @@ public class LightEngineBlockAccess {
     }
 
     private ChunkSection[] retrieveChunkSections(int chunkX, int chunkZ) {
-        Chunk chunk = (Chunk) this.chunkProvider.getChunk(chunkX, chunkZ);
+        IChunk chunk = (IChunk) this.chunkProvider.getChunkForLight(chunkX, chunkZ);
 
         if (chunk == null) {
             return null;
         }
 
-        return chunk.getSectionArray();
+        return chunk.getSections();
     }
 
     private void addToCache(long coord, ChunkSection[] sections) {

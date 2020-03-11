@@ -7,37 +7,37 @@ import me.jellysquid.mods.phosphor.common.chunk.ExtendedSkyLightStorage;
 import me.jellysquid.mods.phosphor.common.util.math.ChunkSectionPosHelper;
 import me.jellysquid.mods.phosphor.common.util.math.DirectionHelper;
 import net.minecraft.block.BlockState;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkSectionPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
+import net.minecraft.util.math.SectionPos;
+import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.LightType;
-import net.minecraft.world.chunk.ChunkProvider;
-import net.minecraft.world.chunk.light.ChunkLightProvider;
-import net.minecraft.world.chunk.light.ChunkSkyLightProvider;
-import net.minecraft.world.chunk.light.SkyLightStorage;
+import net.minecraft.world.chunk.IChunkLightProvider;
+import net.minecraft.world.lighting.LightEngine;
+import net.minecraft.world.lighting.SkyLightEngine;
+import net.minecraft.world.lighting.SkyLightStorage;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
-import static net.minecraft.util.math.ChunkSectionPos.getLocalCoord;
-import static net.minecraft.util.math.ChunkSectionPos.getSectionCoord;
+import static net.minecraft.util.math.SectionPos.mask;
+import static net.minecraft.util.math.SectionPos.toChunk;
 
-@Mixin(ChunkSkyLightProvider.class)
-public abstract class MixinChunkSkyLightProvider extends ChunkLightProvider<SkyLightStorage.Data, SkyLightStorage>
+@Mixin(SkyLightEngine.class)
+public abstract class MixinSkyLightEngine extends LightEngine<SkyLightStorage.StorageMap, SkyLightStorage>
         implements ExtendedLevelPropagator, ExtendedChunkLightProvider {
     @Shadow
     @Final
-    private static Direction[] HORIZONTAL_DIRECTIONS;
+    private static Direction[] CARDINALS;
 
     @Shadow
     @Final
     private static Direction[] DIRECTIONS;
 
-    public MixinChunkSkyLightProvider(ChunkProvider chunkProvider, LightType type, SkyLightStorage lightStorage) {
-        super(chunkProvider, type, lightStorage);
+    public MixinSkyLightEngine(IChunkLightProvider lightProvider, LightType lightType, SkyLightStorage storage) {
+        super(lightProvider, lightType, storage);
     }
 
     /**
@@ -46,8 +46,8 @@ public abstract class MixinChunkSkyLightProvider extends ChunkLightProvider<SkyL
      */
     @Override
     @Overwrite
-    public int getPropagatedLevel(long fromId, long toId, int currentLevel) {
-        return this.getPropagatedLevel(fromId, null, toId, currentLevel);
+    public int getEdgeLevel(long fromId, long toId, int currentLevel) {
+        return this.getEdgeLevel(fromId, null, toId, currentLevel);
     }
 
     /**
@@ -65,13 +65,13 @@ public abstract class MixinChunkSkyLightProvider extends ChunkLightProvider<SkyL
      * @param fromState The re-usable block state at position {@param fromId}
      */
     @Override
-    public int getPropagatedLevel(long fromId, BlockState fromState, long toId, int currentLevel) {
+    public int getEdgeLevel(long fromId, BlockState fromState, long toId, int currentLevel) {
         if (toId == Long.MAX_VALUE) {
             return 15;
         }
 
         if (fromId == Long.MAX_VALUE) {
-            if (((ExtendedSkyLightStorage) this.lightStorage).bridge$method_15565(toId)) {
+            if (((ExtendedSkyLightStorage) this.storage).bridge$func_215551_l(toId)) {
                 currentLevel = 0;
             } else {
                 return 15;
@@ -82,9 +82,9 @@ public abstract class MixinChunkSkyLightProvider extends ChunkLightProvider<SkyL
             return currentLevel;
         }
 
-        int toX = BlockPos.unpackLongX(toId);
-        int toY = BlockPos.unpackLongY(toId);
-        int toZ = BlockPos.unpackLongZ(toId);
+        int toX = BlockPos.unpackX(toId);
+        int toY = BlockPos.unpackY(toId);
+        int toZ = BlockPos.unpackZ(toId);
 
         BlockState toState = this.getBlockStateForLighting(toX, toY, toZ);
 
@@ -92,9 +92,9 @@ public abstract class MixinChunkSkyLightProvider extends ChunkLightProvider<SkyL
             return 15;
         }
 
-        int fromX = BlockPos.unpackLongX(fromId);
-        int fromY = BlockPos.unpackLongY(fromId);
-        int fromZ = BlockPos.unpackLongZ(fromId);
+        int fromX = BlockPos.unpackX(fromId);
+        int fromY = BlockPos.unpackY(fromId);
+        int fromZ = BlockPos.unpackZ(fromId);
 
         if (fromState == null) {
             fromState = this.getBlockStateForLighting(fromX, fromY, fromZ);
@@ -116,12 +116,12 @@ public abstract class MixinChunkSkyLightProvider extends ChunkLightProvider<SkyL
             if (toShape != VoxelShapes.fullCube()) {
                 VoxelShape fromShape = this.getOpaqueShape(fromState, fromX, fromY, fromZ, dir);
 
-                if (VoxelShapes.unionCoversFullCube(fromShape, toShape)) {
+                if (VoxelShapes.faceShapeCovers(fromShape, toShape)) {
                     return 15;
                 }
             }
         } else {
-            Direction altDir = Direction.fromVector(toX - fromX, verticalOnly ? -1 : 0, toZ - fromZ);
+            Direction altDir = Direction.byLong(toX - fromX, verticalOnly ? -1 : 0, toZ - fromZ);
 
             if (altDir == null) {
                 return 15;
@@ -129,13 +129,13 @@ public abstract class MixinChunkSkyLightProvider extends ChunkLightProvider<SkyL
 
             VoxelShape toShape = this.getOpaqueShape(toState, toX, toY, toZ, altDir.getOpposite());
 
-            if (VoxelShapes.unionCoversFullCube(VoxelShapes.empty(), toShape)) {
+            if (VoxelShapes.faceShapeCovers(VoxelShapes.empty(), toShape)) {
                 return 15;
             }
 
             VoxelShape fromShape = this.getOpaqueShape(fromState, fromX, fromY, fromZ, Direction.DOWN);
 
-            if (VoxelShapes.unionCoversFullCube(fromShape, VoxelShapes.empty())) {
+            if (VoxelShapes.faceShapeCovers(fromShape, VoxelShapes.empty())) {
                 return 15;
             }
         }
@@ -165,69 +165,69 @@ public abstract class MixinChunkSkyLightProvider extends ChunkLightProvider<SkyL
      */
     @Override
     @Overwrite
-    public void propagateLevel(long id, int targetLevel, boolean mergeAsMin) {
-        long chunkId = ChunkSectionPos.fromGlobalPos(id);
+    public void notifyNeighbors(long id, int targetLevel, boolean mergeAsMin) {
+        long chunkId = SectionPos.worldToSection(id);
 
-        int x = BlockPos.unpackLongX(id);
-        int y = BlockPos.unpackLongY(id);
-        int z = BlockPos.unpackLongZ(id);
+        int x = BlockPos.unpackX(id);
+        int y = BlockPos.unpackY(id);
+        int z = BlockPos.unpackZ(id);
 
-        int localX = getLocalCoord(x);
-        int localY = getLocalCoord(y);
-        int localZ = getLocalCoord(z);
+        int localX = mask(x);
+        int localY = mask(y);
+        int localZ = mask(z);
 
         BlockState fromState = this.getBlockStateForLighting(x, y, z);
 
         // Fast-path: Use much simpler logic if we do not need to access adjacent chunks
         if (localX > 0 && localX < 15 && localY > 0 && localY < 15 && localZ > 0 && localZ < 15) {
             for (Direction dir : DIRECTIONS) {
-                this.propagateLevel(id, fromState, BlockPos.asLong(x + dir.getOffsetX(), y + dir.getOffsetY(), z + dir.getOffsetZ()), targetLevel, mergeAsMin);
+                this.notifyNeighbors(id, fromState, BlockPos.pack(x + dir.getXOffset(), y + dir.getYOffset(), z + dir.getZOffset()), targetLevel, mergeAsMin);
             }
 
             return;
         }
 
-        int chunkY = getSectionCoord(y);
+        int chunkY = mask(y);
         int chunkOffsetY = 0;
 
         // Skylight optimization: Try to find bottom-most non-empty chunk
         if (localY == 0) {
-            while (!((ExtendedGenericLightStorage) this.lightStorage).bridge$hasChunk(ChunkSectionPos.offset(chunkId, 0, -chunkOffsetY - 1, 0))
-                    && ((ExtendedSkyLightStorage) this.lightStorage).bridge$isAboveMinimumHeight(chunkY - chunkOffsetY - 1)) {
+            while (!((ExtendedGenericLightStorage) this.storage).bridge$hasChunk(SectionPos.withOffset(chunkId, 0, -chunkOffsetY - 1, 0))
+                    && ((ExtendedSkyLightStorage) this.storage).bridge$func_215550_a(chunkY - chunkOffsetY - 1)) {
                 ++chunkOffsetY;
             }
         }
 
         int belowY = y + (-1 - chunkOffsetY * 16);
-        int belowChunkY = getSectionCoord(belowY);
+        int belowChunkY = toChunk(belowY);
 
-        if (chunkY == belowChunkY || ((ExtendedGenericLightStorage) this.lightStorage).bridge$hasChunk(ChunkSectionPosHelper.updateYLong(chunkId, belowChunkY))) {
-            this.propagateLevel(id, fromState, BlockPos.asLong(x, belowY, z), targetLevel, mergeAsMin);
+        if (chunkY == belowChunkY || ((ExtendedGenericLightStorage) this.storage).bridge$hasChunk(ChunkSectionPosHelper.updateYLong(chunkId, belowChunkY))) {
+            this.notifyNeighbors(id, fromState, BlockPos.pack(x, belowY, z), targetLevel, mergeAsMin);
         }
 
         int aboveY = y + 1;
-        int aboveChunkY = getSectionCoord(aboveY);
+        int aboveChunkY = toChunk(aboveY);
 
-        if (chunkY == aboveChunkY || ((ExtendedGenericLightStorage) this.lightStorage).bridge$hasChunk(ChunkSectionPosHelper.updateYLong(chunkId, aboveChunkY))) {
-            this.propagateLevel(id, fromState, BlockPos.asLong(x, aboveY, z), targetLevel, mergeAsMin);
+        if (chunkY == aboveChunkY || ((ExtendedGenericLightStorage) this.storage).bridge$hasChunk(ChunkSectionPosHelper.updateYLong(chunkId, aboveChunkY))) {
+            this.notifyNeighbors(id, fromState, BlockPos.pack(x, aboveY, z), targetLevel, mergeAsMin);
         }
 
-        for (Direction dir : HORIZONTAL_DIRECTIONS) {
-            int adjX = x + dir.getOffsetX();
-            int adjZ = z + dir.getOffsetZ();
+        for (Direction dir : CARDINALS) {
+            int adjX = x + dir.getXOffset();
+            int adjZ = z + dir.getZOffset();
 
             int offsetY = 0;
 
             while (true) {
                 int adjY = y - offsetY;
 
-                long offsetId = BlockPos.asLong(adjX, adjY, adjZ);
-                long offsetChunkId = ChunkSectionPos.fromGlobalPos(offsetId);
+                long offsetId = BlockPos.pack(adjX, adjY, adjZ);
+                long offsetChunkId = SectionPos.worldToSection(offsetId);
 
                 boolean flag = chunkId == offsetChunkId;
 
-                if (flag || ((ExtendedGenericLightStorage) this.lightStorage).bridge$hasChunk(offsetChunkId)) {
-                    this.propagateLevel(id, fromState, offsetId, targetLevel, mergeAsMin);
+                if (flag || ((ExtendedGenericLightStorage) this.storage).bridge$hasChunk(offsetChunkId)) {
+                    this.notifyNeighbors(id, fromState, offsetId, targetLevel, mergeAsMin);
                 }
 
                 if (flag) {

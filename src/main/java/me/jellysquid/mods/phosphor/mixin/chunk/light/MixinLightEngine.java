@@ -5,15 +5,15 @@ import me.jellysquid.mods.phosphor.common.chunk.ExtendedChunkLightProvider;
 import me.jellysquid.mods.phosphor.common.util.cache.LightEngineBlockAccess;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
+import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.LightType;
-import net.minecraft.world.chunk.ChunkProvider;
-import net.minecraft.world.chunk.ChunkToNibbleArrayMap;
-import net.minecraft.world.chunk.light.ChunkLightProvider;
-import net.minecraft.world.chunk.light.LightStorage;
+import net.minecraft.world.chunk.IChunkLightProvider;
+import net.minecraft.world.lighting.LightDataMap;
+import net.minecraft.world.lighting.LightEngine;
+import net.minecraft.world.lighting.SectionLightStorage;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -21,24 +21,24 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-@Mixin(ChunkLightProvider.class)
-public class MixinChunkLightProvider<M extends ChunkToNibbleArrayMap<M>, S extends LightStorage<M>> implements ExtendedChunkLightProvider {
+@Mixin(LightEngine.class)
+public class MixinLightEngine<M extends LightDataMap<M>, S extends SectionLightStorage<M>> implements ExtendedChunkLightProvider {
     @Shadow
     @Final
-    protected BlockPos.Mutable reusableBlockPos;
+    protected BlockPos.Mutable scratchPos;
 
     @Shadow
     @Final
-    protected ChunkProvider chunkProvider;
+    protected IChunkLightProvider chunkProvider;
 
     private LightEngineBlockAccess blockAccess;
 
     @Inject(method = "<init>", at = @At("RETURN"))
-    private void onConstructed(ChunkProvider provider, LightType lightType, S storage, CallbackInfo ci) {
-        this.blockAccess = new LightEngineBlockAccess(provider);
+    private void onConstructed(IChunkLightProvider lightProvider, LightType lightType, S storage, CallbackInfo ci) {
+        this.blockAccess = new LightEngineBlockAccess(lightProvider);
     }
 
-    @Inject(method = "clearChunkCache", at = @At("RETURN"))
+    @Inject(method = "invalidateCaches", at = @At("RETURN"))
     private void onCleanup(CallbackInfo ci) {
         // This callback may be executed from the constructor above, and the object won't be initialized then
         if (this.blockAccess != null) {
@@ -64,7 +64,7 @@ public class MixinChunkLightProvider<M extends ChunkToNibbleArrayMap<M>, S exten
         if (estate.hasCachedLightOpacity()) {
             return estate.getCachedLightOpacity();
         } else {
-            return estate.getDynamicLightOpacity(this.chunkProvider.getWorld(), this.reusableBlockPos.set(x, y, z));
+            return estate.getDynamicLightOpacity(this.chunkProvider.getWorld(), this.scratchPos.setPos(x, y, z));
         }
     }
 
@@ -83,7 +83,7 @@ public class MixinChunkLightProvider<M extends ChunkToNibbleArrayMap<M>, S exten
             return shape;
         }
 
-        return estate.getDynamicExtrudedFace(this.chunkProvider.getWorld(), this.reusableBlockPos.set(x, y, z), dir);
+        return estate.getDynamicExtrudedFace(this.chunkProvider.getWorld(), this.scratchPos.setPos(x, y, z), dir);
     }
 
     // [VanillaCopy] method_20479

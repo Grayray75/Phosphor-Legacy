@@ -1,6 +1,6 @@
 package me.jellysquid.mods.phosphor.common.util.math;
 
-import net.minecraft.util.math.Direction;
+import net.minecraft.util.Direction;
 
 public class DirectionHelper {
     /**

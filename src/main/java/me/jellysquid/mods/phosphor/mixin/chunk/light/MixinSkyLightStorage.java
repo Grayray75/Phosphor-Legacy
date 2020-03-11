@@ -1,13 +1,13 @@
 package me.jellysquid.mods.phosphor.mixin.chunk.light;
 
-import me.jellysquid.mods.phosphor.common.chunk.ExtendedLightStorage;
+import me.jellysquid.mods.phosphor.common.chunk.ExtendedSectionLightStorage;
 import me.jellysquid.mods.phosphor.common.chunk.ExtendedSkyLightStorage;
-import me.jellysquid.mods.phosphor.common.chunk.ExtendedSkyLightStorageData;
+import me.jellysquid.mods.phosphor.common.chunk.ExtendedSkyLightStorageMap;
 import me.jellysquid.mods.phosphor.common.util.math.ChunkSectionPosHelper;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkSectionPos;
-import net.minecraft.world.chunk.ChunkNibbleArray;
-import net.minecraft.world.chunk.light.SkyLightStorage;
+import net.minecraft.util.math.SectionPos;
+import net.minecraft.world.chunk.NibbleArray;
+import net.minecraft.world.lighting.SkyLightStorage;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
@@ -15,19 +15,19 @@ import org.spongepowered.asm.mixin.Shadow;
 @Mixin(SkyLightStorage.class)
 public abstract class MixinSkyLightStorage implements ExtendedSkyLightStorage {
     @Shadow
-    protected abstract boolean method_15565(long l);
+    protected abstract boolean func_215551_l(long l);
 
     @Shadow
-    protected abstract boolean isAboveMinimumHeight(int blockY);
+    protected abstract boolean func_215550_a(int blockY);
 
     @Override
-    public boolean bridge$method_15565(long l) {
-        return this.method_15565(l);
+    public boolean bridge$func_215551_l(long l) {
+        return this.func_215551_l(l);
     }
 
     @Override
-    public boolean bridge$isAboveMinimumHeight(int blockY) {
-        return this.isAboveMinimumHeight(blockY);
+    public boolean bridge$func_215550_a(int blockY) {
+        return this.func_215550_a(blockY);
     }
 
     /**
@@ -38,23 +38,23 @@ public abstract class MixinSkyLightStorage implements ExtendedSkyLightStorage {
      */
     @SuppressWarnings({"ConstantConditions", "unchecked"})
     @Overwrite
-    public int getLight(long pos) {
-        int posX = BlockPos.unpackLongX(pos);
-        int posY = BlockPos.unpackLongY(pos);
-        int posZ = BlockPos.unpackLongZ(pos);
+    public int getLightOrDefault(long pos) {
+        int posX = BlockPos.unpackX(pos);
+        int posY = BlockPos.unpackY(pos);
+        int posZ = BlockPos.unpackZ(pos);
 
-        int chunkX = ChunkSectionPos.getSectionCoord(posX);
-        int chunkY = ChunkSectionPos.getSectionCoord(posY);
-        int chunkZ = ChunkSectionPos.getSectionCoord(posZ);
+        int chunkX = SectionPos.toChunk(posX);
+        int chunkY = SectionPos.toChunk(posY);
+        int chunkZ = SectionPos.toChunk(posZ);
 
-        long chunk = ChunkSectionPos.asLong(chunkX, chunkY, chunkZ);
+        long chunk = SectionPos.asLong(chunkX, chunkY, chunkZ);
 
-        SkyLightStorage.Data data = ((ExtendedLightStorage<SkyLightStorage.Data>) this).bridge$getStorageUncached();
+        SkyLightStorage.StorageMap data = ((ExtendedSectionLightStorage<SkyLightStorage.StorageMap>) this).bridge$getStorageUncached();
 
-        int h = ((ExtendedSkyLightStorageData) (Object) data).bridge$heightMap().get(ChunkSectionPos.withZeroZ(chunk));
+        int h = ((ExtendedSkyLightStorageMap) (Object) data).bridge$heightMap().get(SectionPos.toSectionColumnPos(chunk));
 
-        if (h != ((ExtendedSkyLightStorageData) (Object) data).bridge$defaultHeight() && chunkY < h) {
-            ChunkNibbleArray array = ((ExtendedLightStorage<SkyLightStorage.Data>) this).bridge$getDataForChunk(data, chunk);
+        if (h != ((ExtendedSkyLightStorageMap) (Object) data).bridge$defaultHeight() && chunkY < h) {
+            NibbleArray array = ((ExtendedSectionLightStorage<SkyLightStorage.StorageMap>) this).bridge$getDataForChunk(data, chunk);
 
             if (array == null) {
                 posY &= -16;
@@ -68,14 +68,14 @@ public abstract class MixinSkyLightStorage implements ExtendedSkyLightStorage {
 
                     chunk = ChunkSectionPosHelper.updateYLong(chunk, chunkY);
                     posY += 16;
-                    array = ((ExtendedLightStorage<SkyLightStorage.Data>) this).bridge$getDataForChunk(data, chunk);
+                    array = ((ExtendedSectionLightStorage<SkyLightStorage.StorageMap>) this).bridge$getDataForChunk(data, chunk);
                 }
             }
 
             return array.get(
-                    ChunkSectionPos.getLocalCoord(posX),
-                    ChunkSectionPos.getLocalCoord(posY),
-                    ChunkSectionPos.getLocalCoord(posZ)
+                    SectionPos.mask(posX),
+                    SectionPos.mask(posY),
+                    SectionPos.mask(posZ)
             );
         } else {
             return 15;

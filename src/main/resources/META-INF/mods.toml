@@ -1,0 +1,18 @@
+modLoader="javafml"
+loaderVersion="[31,)"
+issueTrackerURL="https://github.com/jellysquid/phosphor/issues"
+
+[[mods]]
+modId="phosphor"
+version="${file.jarVersion}"
+displayName="Phosphor"
+displayURL="https://www.curseforge.com/minecraft/mc-mods/phosphor"
+logoFile="icon.png"
+authors="JellySquid"
+description='''
+Phosphor is an optimization mod for Minecraft which improves the performance of the lighting engine, resulting in significantly reduced world generation times and improved server tick rates.
+
+You can help support development through making a pledge to my Patreon: https://patreon.com/jellysquid
+
+You can find the source code under the GNU LGPLv3 on GitHub: https://github.com/jellysquid3/phosphor
+'''

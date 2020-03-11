@@ -1,16 +1,18 @@
 {
-    "required": true,
     "package": "me.jellysquid.mods.phosphor.mixin",
+    "required": true,
     "compatibilityLevel": "JAVA_8",
+    "refmap": "mixins.phosphor.refmap.json",
+    "minVersion": "0.8",
     "mixins": [
-        "chunk.light.MixinChunkLightProvider",
-        "chunk.light.MixinChunkBlockLightProvider",
-        "chunk.light.MixinChunkSkyLightProvider",
+        "chunk.light.MixinBlockLightEngine",
+        "chunk.light.MixinLevelBasedGraph",
+        "chunk.light.MixinLightEngine",
+        "chunk.light.MixinSectionLightStorage",
+        "chunk.light.MixinSkyLightEngine",
         "chunk.light.MixinSkyLightStorage",
-        "chunk.light.MixinLightStorage",
-        "chunk.light.MixinSkyLightStorageData",
-        "chunk.light.MixinLevelPropagator",
-        "chunk.MixinChunkNibbleArray",
+        "chunk.light.MixinSkyLightStorageMap",
+        "chunk.MixinNibbleArray",
         "block.MixinBlockState"
     ],
     "injectors": {

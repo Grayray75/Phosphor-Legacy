@@ -5,32 +5,32 @@ import me.jellysquid.mods.phosphor.common.chunk.ExtendedGenericLightStorage;
 import me.jellysquid.mods.phosphor.common.chunk.ExtendedLevelPropagator;
 import me.jellysquid.mods.phosphor.common.util.math.DirectionHelper;
 import net.minecraft.block.BlockState;
+import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.ChunkSectionPos;
-import net.minecraft.util.math.Direction;
-import net.minecraft.util.shape.VoxelShape;
-import net.minecraft.util.shape.VoxelShapes;
+import net.minecraft.util.math.SectionPos;
+import net.minecraft.util.math.shapes.VoxelShape;
+import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.LightType;
-import net.minecraft.world.chunk.ChunkProvider;
-import net.minecraft.world.chunk.light.BlockLightStorage;
-import net.minecraft.world.chunk.light.ChunkBlockLightProvider;
-import net.minecraft.world.chunk.light.ChunkLightProvider;
+import net.minecraft.world.chunk.IChunkLightProvider;
+import net.minecraft.world.lighting.BlockLightEngine;
+import net.minecraft.world.lighting.BlockLightStorage;
+import net.minecraft.world.lighting.LightEngine;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
-import static net.minecraft.util.math.ChunkSectionPos.getSectionCoord;
+import static net.minecraft.util.math.SectionPos.toChunk;
 
-@Mixin(ChunkBlockLightProvider.class)
-public abstract class MixinChunkBlockLightProvider extends ChunkLightProvider<BlockLightStorage.Data, BlockLightStorage>
+@Mixin(BlockLightEngine.class)
+public abstract class MixinBlockLightEngine extends LightEngine<BlockLightStorage.StorageMap, BlockLightStorage>
         implements ExtendedLevelPropagator, ExtendedChunkLightProvider {
-    public MixinChunkBlockLightProvider(ChunkProvider chunkProvider, LightType type, BlockLightStorage lightStorage) {
-        super(chunkProvider, type, lightStorage);
+    public MixinBlockLightEngine(IChunkLightProvider lightProvider, LightType type, BlockLightStorage storage) {
+        super(lightProvider, type, storage);
     }
 
     @Shadow
-    protected abstract int getLightSourceLuminance(long blockPos);
+    protected abstract int getLightValue(long blockPos);
 
     @Shadow
     @Final
@@ -42,8 +42,8 @@ public abstract class MixinChunkBlockLightProvider extends ChunkLightProvider<Bl
      */
     @Override
     @Overwrite
-    public int getPropagatedLevel(long fromId, long toId, int currentLevel) {
-        return this.getPropagatedLevel(fromId, null, toId, currentLevel);
+    public int getEdgeLevel(long fromId, long toId, int currentLevel) {
+        return this.getEdgeLevel(fromId, null, toId, currentLevel);
     }
 
     /**
@@ -62,22 +62,22 @@ public abstract class MixinChunkBlockLightProvider extends ChunkLightProvider<Bl
      * @author JellySquid
      */
     @Override
-    public int getPropagatedLevel(long fromId, BlockState fromState, long toId, int currentLevel) {
+    public int getEdgeLevel(long fromId, BlockState fromState, long toId, int currentLevel) {
         if (toId == Long.MAX_VALUE) {
             return 15;
         } else if (fromId == Long.MAX_VALUE) {
-            return currentLevel + 15 - this.getLightSourceLuminance(toId);
+            return currentLevel + 15 - this.getLightValue(toId);
         } else if (currentLevel >= 15) {
             return currentLevel;
         }
 
-        int toX = BlockPos.unpackLongX(toId);
-        int toY = BlockPos.unpackLongY(toId);
-        int toZ = BlockPos.unpackLongZ(toId);
+        int toX = BlockPos.unpackX(toId);
+        int toY = BlockPos.unpackY(toId);
+        int toZ = BlockPos.unpackZ(toId);
 
-        int fromX = BlockPos.unpackLongX(fromId);
-        int fromY = BlockPos.unpackLongY(fromId);
-        int fromZ = BlockPos.unpackLongZ(fromId);
+        int fromX = BlockPos.unpackX(fromId);
+        int fromY = BlockPos.unpackY(fromId);
+        int fromZ = BlockPos.unpackZ(fromId);
 
         Direction dir = DirectionHelper.getVecDirection(toX - fromX, toY - fromY, toZ - fromZ);
 
@@ -101,7 +101,7 @@ public abstract class MixinChunkBlockLightProvider extends ChunkLightProvider<Bl
             VoxelShape aShape = this.getOpaqueShape(fromState, fromX, fromY, fromZ, dir);
             VoxelShape bShape = this.getOpaqueShape(toState, toX, toY, toZ, dir.getOpposite());
 
-            if (!VoxelShapes.unionCoversFullCube(aShape, bShape)) {
+            if (!VoxelShapes.faceShapeCovers(aShape, bShape)) {
                 return currentLevel + Math.max(1, newLevel);
             }
         }
@@ -116,24 +116,24 @@ public abstract class MixinChunkBlockLightProvider extends ChunkLightProvider<Bl
      */
     @Override
     @Overwrite
-    public void propagateLevel(long id, int targetLevel, boolean mergeAsMin) {
-        int x = BlockPos.unpackLongX(id);
-        int y = BlockPos.unpackLongY(id);
-        int z = BlockPos.unpackLongZ(id);
+    public void notifyNeighbors(long id, int targetLevel, boolean mergeAsMin) {
+        int x = BlockPos.unpackX(id);
+        int y = BlockPos.unpackY(id);
+        int z = BlockPos.unpackZ(id);
 
-        long chunk = ChunkSectionPos.asLong(getSectionCoord(x), getSectionCoord(y), getSectionCoord(z));
+        long chunk = SectionPos.asLong(toChunk(x), toChunk(y), toChunk(z));
 
         BlockState state = this.getBlockStateForLighting(x, y, z);
 
         for (Direction dir : DIRECTIONS) {
-            int adjX = x + dir.getOffsetX();
-            int adjY = y + dir.getOffsetY();
-            int adjZ = z + dir.getOffsetZ();
+            int adjX = x + dir.getXOffset();
+            int adjY = y + dir.getYOffset();
+            int adjZ = z + dir.getZOffset();
 
-            long adjChunk = ChunkSectionPos.asLong(getSectionCoord(adjX), getSectionCoord(adjY), getSectionCoord(adjZ));
+            long adjChunk = SectionPos.asLong(toChunk(adjX), toChunk(adjY), toChunk(adjZ));
 
-            if ((chunk == adjChunk) || ((ExtendedGenericLightStorage) this.lightStorage).bridge$hasChunk(adjChunk)) {
-                this.propagateLevel(id, state, BlockPos.asLong(adjX, adjY, adjZ), targetLevel, mergeAsMin);
+            if ((chunk == adjChunk) || ((ExtendedGenericLightStorage) this.storage).bridge$hasChunk(adjChunk)) {
+                this.notifyNeighbors(id, state, BlockPos.pack(adjX, adjY, adjZ), targetLevel, mergeAsMin);
             }
         }
     }
