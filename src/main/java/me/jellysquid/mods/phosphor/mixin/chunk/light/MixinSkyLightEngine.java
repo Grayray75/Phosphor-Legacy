@@ -187,7 +187,7 @@ public abstract class MixinSkyLightEngine extends LightEngine<SkyLightStorage.St
             return;
         }
 
-        int chunkY = mask(y);
+        int chunkY = toChunk(y);
         int chunkOffsetY = 0;
 
         // Skylight optimization: Try to find bottom-most non-empty chunk
