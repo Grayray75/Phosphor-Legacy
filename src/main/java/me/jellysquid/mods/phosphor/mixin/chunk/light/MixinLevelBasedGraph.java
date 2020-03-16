@@ -43,10 +43,10 @@ public abstract class MixinLevelBasedGraph implements ExtendedLevelPropagator {
     protected abstract void notifyNeighbors(long id, int targetLevel, boolean mergeAsMin);
 
     @Shadow
-    protected abstract int computeLevel(long sourceId, long targetId, int level);
+    protected abstract void propagateLevel(long sourceId, long id, int level, int currentLevel, int pendingLevel, boolean decrease);
 
     @Shadow
-    protected abstract void propagateLevel(long sourceId, long id, int level, int currentLevel, int pendingLevel, boolean decrease);
+    protected abstract int getEdgeLevel(long startPos, long endPos, int startLevel);
 
     private PendingLevelUpdateTracker[] pendingUpdateSet;
 
@@ -218,6 +218,6 @@ public abstract class MixinLevelBasedGraph implements ExtendedLevelPropagator {
 
     @Override
     public int getEdgeLevel(long sourceId, BlockState sourceState, long targetId, int level) {
-        return this.computeLevel(sourceId, targetId, level);
+        return this.getEdgeLevel(sourceId, targetId, level);
     }
 }
