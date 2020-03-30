@@ -11,8 +11,11 @@
         "chunk.light.MixinSectionLightStorage",
         "chunk.light.MixinSkyLightEngine",
         "chunk.light.MixinSkyLightStorage",
-        "chunk.light.MixinSkyLightStorageMap",
-        "chunk.MixinNibbleArray",
+        "chunk.light.MixinLightStorage",
+        "chunk.light.MixinSkyLightStorageData",
+        "chunk.light.MixinLevelPropagator",
+        "chunk.MixinChunkNibbleArray",
+        "chunk.MixinChunk",
         "block.MixinBlockState"
     ],
     "injectors": {
