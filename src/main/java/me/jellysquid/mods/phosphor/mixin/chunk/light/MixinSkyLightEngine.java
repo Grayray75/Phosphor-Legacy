@@ -2,7 +2,7 @@ package me.jellysquid.mods.phosphor.mixin.chunk.light;
 
 import me.jellysquid.mods.phosphor.common.chunk.ExtendedChunkLightProvider;
 import me.jellysquid.mods.phosphor.common.chunk.ExtendedGenericLightStorage;
-import me.jellysquid.mods.phosphor.common.chunk.ExtendedLevelPropagator;
+import me.jellysquid.mods.phosphor.common.chunk.ExtendedLightEngine;
 import me.jellysquid.mods.phosphor.common.chunk.ExtendedSkyLightStorage;
 import me.jellysquid.mods.phosphor.common.util.math.ChunkSectionPosHelper;
 import me.jellysquid.mods.phosphor.common.util.math.DirectionHelper;
@@ -27,7 +27,7 @@ import static net.minecraft.util.math.SectionPos.toChunk;
 
 @Mixin(SkyLightEngine.class)
 public abstract class MixinSkyLightEngine extends LightEngine<SkyLightStorage.StorageMap, SkyLightStorage>
-        implements ExtendedLevelPropagator, ExtendedChunkLightProvider {
+        implements ExtendedLightEngine, ExtendedChunkLightProvider {
     @Shadow
     @Final
     private static Direction[] CARDINALS;

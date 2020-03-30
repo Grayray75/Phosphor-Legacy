@@ -2,7 +2,7 @@ package me.jellysquid.mods.phosphor.mixin.chunk.light;
 
 import me.jellysquid.mods.phosphor.common.chunk.ExtendedChunkLightProvider;
 import me.jellysquid.mods.phosphor.common.chunk.ExtendedGenericLightStorage;
-import me.jellysquid.mods.phosphor.common.chunk.ExtendedLevelPropagator;
+import me.jellysquid.mods.phosphor.common.chunk.ExtendedLightEngine;
 import me.jellysquid.mods.phosphor.common.util.math.DirectionHelper;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.Direction;
@@ -24,7 +24,7 @@ import static net.minecraft.util.math.SectionPos.toChunk;
 
 @Mixin(BlockLightEngine.class)
 public abstract class MixinBlockLightEngine extends LightEngine<BlockLightStorage.StorageMap, BlockLightStorage>
-        implements ExtendedLevelPropagator, ExtendedChunkLightProvider {
+        implements ExtendedLightEngine, ExtendedChunkLightProvider {
     public MixinBlockLightEngine(IChunkLightProvider lightProvider, LightType type, BlockLightStorage storage) {
         super(lightProvider, type, storage);
     }

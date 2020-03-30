@@ -1,13 +1,18 @@
 package me.jellysquid.mods.phosphor.mixin.chunk.light;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
+import me.jellysquid.mods.phosphor.common.chunk.ExtendedLightEngine;
 import me.jellysquid.mods.phosphor.common.chunk.ExtendedSectionLightStorage;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.SectionPos;
 import net.minecraft.world.chunk.NibbleArray;
 import net.minecraft.world.lighting.LightDataMap;
+import net.minecraft.world.lighting.LightEngine;
 import net.minecraft.world.lighting.SectionLightStorage;
 import org.spongepowered.asm.mixin.*;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(SectionLightStorage.class)
 public abstract class MixinSectionLightStorage<M extends LightDataMap<M>> implements ExtendedSectionLightStorage<M> {
@@ -169,6 +174,19 @@ public abstract class MixinSectionLightStorage<M extends LightDataMap<M>> implem
         }
 
         this.hasSectionsToUpdate = !this.noLightSections.isEmpty();
+    }
+
+    /**
+     * @reason Drastically improve efficiency by making removals O(n) instead of O(16*16*16)
+     * @author JellySquid
+     */
+    @Inject(method = "cancelSectionUpdates", at = @At("HEAD"), cancellable = true)
+    protected void removeChunkData(LightEngine<?, ?> engine, long pos, CallbackInfo ci) {
+        if (engine instanceof ExtendedLightEngine) {
+            ((ExtendedLightEngine) engine).cancelUpdatesForChunk(pos);
+
+            ci.cancel();
+        }
     }
 
     @Override
