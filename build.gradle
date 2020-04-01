@@ -134,10 +134,11 @@ tasks.withType(JavaCompile) {
 task sourcesJar(type: Jar, dependsOn: classes) {
 	classifier = "sources"
 	from sourceSets.main.allSource
+    from "LICENSE"
 }
 
 jar {
-	from "LICENSE"
+    from "LICENSE"
 }
 
 def cf_api_token = System.getenv("CF_API_TOKEN")
