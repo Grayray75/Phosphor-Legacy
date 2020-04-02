@@ -18,13 +18,6 @@ public class PhosphorConfig {
     @SerializedName("enable_phosphor")
     public boolean enablePhosphor = true;
 
-    @SerializedName("show_patreon_message")
-    public boolean showPatreonMessage = true;
-
-    public static PhosphorConfig instance() {
-        return INSTANCE;
-    }
-
     public static PhosphorConfig loadConfig() {
         if (INSTANCE != null) {
             return INSTANCE;

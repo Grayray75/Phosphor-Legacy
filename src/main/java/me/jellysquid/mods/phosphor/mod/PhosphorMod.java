@@ -8,7 +8,6 @@ import org.apache.logging.log4j.Logger;
         name = PhosphorConstants.MOD_NAME,
         modid = PhosphorConstants.MOD_ID,
         version = PhosphorConstants.MOD_VERSION,
-        certificateFingerprint = PhosphorConstants.MOD_FINGERPRINT,
         acceptedMinecraftVersions = "1.12.2",
         acceptableRemoteVersions = "*",
         dependencies = PhosphorConstants.MOD_DEPENDENCIES
