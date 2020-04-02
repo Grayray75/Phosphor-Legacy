@@ -1,12 +1,12 @@
 modLoader="javafml"
 loaderVersion="[31,)"
-issueTrackerURL="https://github.com/jellysquid/phosphor/issues"
+issueTrackerURL="https://github.com/jellysquid3/phosphor-forge/issues"
 
 [[mods]]
 modId="phosphor"
 version="${file.jarVersion}"
 displayName="Phosphor"
-displayURL="https://www.curseforge.com/minecraft/mc-mods/phosphor"
+displayURL="https://www.curseforge.com/minecraft/mc-mods/phosphor-forge"
 logoFile="icon.png"
 authors="JellySquid"
 description='''
@@ -14,5 +14,5 @@ Phosphor is an optimization mod for Minecraft which improves the performance of 
 
 You can help support development through making a pledge to my Patreon: https://patreon.com/jellysquid
 
-You can find the source code under the GNU LGPLv3 on GitHub: https://github.com/jellysquid3/phosphor
+You can find the source code under the GNU LGPLv3 on GitHub: https://github.com/jellysquid3/phosphor-forge
 '''
