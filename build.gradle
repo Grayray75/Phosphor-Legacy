@@ -14,7 +14,6 @@ buildscript {
 
 apply plugin: 'net.minecraftforge.gradle.forge'
 apply plugin: 'org.spongepowered.mixin'
-apply plugin: 'maven-publish'
 
 group = "me.jellysquid.mods"
 
@@ -35,8 +34,10 @@ minecraft {
 
     mappings = forge_mappings
 
-    clientJvmArgs += "-Dfml.coreMods.load=me.jellysquid.mods.phosphor.core.PhosphorFMLLoadingPlugin"
-    serverJvmArgs += "-Dfml.coreMods.load=me.jellysquid.mods.phosphor.core.PhosphorFMLLoadingPlugin"
+    def args = "-Dfml.coreMods.load=me.jellysquid.mods.phosphor.core.PhosphorFMLLoadingPlugin"
+
+    clientJvmArgs += args
+    serverJvmArgs += args
 
     makeObfSourceJar = false
 }
@@ -51,7 +52,7 @@ configurations {
 }
 
 dependencies {
-    shade('org.spongepowered:mixin:0.7.11-SNAPSHOT') {
+    shade('org.spongepowered:mixin:0.8') {
         transitive = false
     }
 }
@@ -130,57 +131,6 @@ processResources {
 
 mixin {
     add sourceSets.main, "mixins.phosphor.refmap.json"
-}
-
-publishing {
-    publications {
-        mod(MavenPublication) {
-            artifact deobfJar
-            artifact sourcesJar
-
-            from components.java
-        }
-    }
-
-    repositories {
-        def mavenSecretsPath = System.getenv("MAVEN_SECRETS_FILE")
-
-        if (mavenSecretsPath != null) {
-            def mavenSecretsFile = file(mavenSecretsPath).newReader()
-            def mavenSecrets = new Properties()
-            mavenSecrets.load(mavenSecretsFile)
-
-            maven {
-                url = mavenSecrets.publishUrl
-
-                credentials {
-                    username = mavenSecrets.username
-                    password = mavenSecrets.password
-                }
-            }
-        }
-    }
-}
-
-if (System.getenv("JARSIGN_SECRETS_FILE") != null) {
-    def secretsFile = file(System.getenv("JARSIGN_SECRETS_FILE"))
-
-    def secrets = new Properties()
-    secrets.load(secretsFile.newReader())
-
-    [jar, sourcesJar, deobfJar].each { jarTask ->
-        def task = task(jarTask.name + 'Sign', type: SignJar) {
-            keyStore = System.getenv("JARSIGN_KEYSTORE_FILE")
-            alias = secrets.alias
-            storePass = secrets.storePassword
-            keyPass = secrets.keyPassword
-
-            inputFile = jarTask.archivePath
-            outputFile = jarTask.archivePath
-        }
-
-        jarTask.finalizedBy task
-    }
 }
 
 build.dependsOn deobfJar, sourcesJar
