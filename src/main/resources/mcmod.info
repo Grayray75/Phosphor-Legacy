@@ -6,7 +6,7 @@
     "version": "${version}",
     "mcversion": "${mcversion}",
     "logoFile": "/assets/phosphor-lighting/icon.png",
-    "url": "https://minecraft.curseforge.com/projects/phosphor",
+    "url": "https://minecraft.curseforge.com/projects/phosphor-forge",
     "authorList": [
       "Angeline (@jellysquid)"
     ]
