@@ -66,21 +66,25 @@ public abstract class MixinLevelBasedGraph implements LevelBasedGraphExtended, P
         return this.getEdgeLevel(sourceId, targetId, level);
     }
 
-    @Redirect(method = "removeToUpdate", at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/longs/Long2ByteMap;remove(J)B", remap = false))
-    private byte redirectRemoveToUpdate(Long2ByteMap map, long key) {
-        this.onPendingUpdateRemoved(key);
-        return map.remove(key);
+    @Redirect(method = { "removeToUpdate", "processUpdates" }, at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/longs/Long2ByteMap;remove(J)B", remap = false))
+    private byte redirectRemovePendingUpdate(Long2ByteMap map, long key) {
+        byte ret = map.remove(key);
+
+        if (ret != map.defaultReturnValue()) {
+            this.onPendingUpdateRemoved(key);
+        }
+
+        return ret;
     }
 
     @Redirect(method = "addToUpdate", at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/longs/Long2ByteMap;put(JB)B", remap = false))
-    private byte redirectAddToUpdate(Long2ByteMap map, long key, byte value) {
-        this.onPendingUpdateAdded(key);
-        return map.put(key, value);
-    }
+    private byte redirectAddPendingUpdate(Long2ByteMap map, long key, byte value) {
+        byte ret = map.put(key, value);
 
-    @Redirect(method = "processUpdates", at = @At(value = "INVOKE", target = "Lit/unimi/dsi/fastutil/longs/Long2ByteMap;remove(J)B", remap = false))
-    private byte redirectProcessUpdates(Long2ByteMap map, long key) {
-        this.onPendingUpdateRemoved(key);
-        return map.remove(key);
+        if (ret == map.defaultReturnValue()) {
+            this.onPendingUpdateAdded(key);
+        }
+
+        return ret;
     }
 }
