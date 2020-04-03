@@ -1,5 +1,5 @@
 
-![Project icon](https://github.com/jellysquid3/phosphor-forge/raw/master/doc/logo.png)
+![Project icon](https://github.com/jellysquid3/phosphor-forge/raw/1.15.x/dev/doc/logo.png)
 
 # Phosphor
 ![GitHub license](https://img.shields.io/github/license/jellysquid3/phosphor-forge.svg)
@@ -17,7 +17,7 @@ with many Minecraft mods (so long as they do not make drastic changes to how the
 
 You can help buy me food and support development of my mods by [making a monthly pledge to my Patreon!](https://patreon.com/jellysquid) You'll also gain some special perks, such as prioritized support on [my Discord server](https://discord.gg/kcb57Cm).
 
-<a href="https://www.patreon.com/bePatron?u=824442"><img src="https://github.com/jellysquid3/phosphor-forge/raw/master/doc/patreon.png" width="200"></a>
+<a href="https://www.patreon.com/bePatron?u=824442"><img src="https://github.com/jellysquid3/phosphor-forge/raw/1.15.x/dev/doc/patreon.png" width="200"></a>
 
 ### License
 
