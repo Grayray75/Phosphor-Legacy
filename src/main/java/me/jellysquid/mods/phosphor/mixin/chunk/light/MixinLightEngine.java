@@ -14,6 +14,7 @@ import net.minecraft.util.math.shapes.VoxelShape;
 import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.LightType;
 import net.minecraft.world.chunk.IChunkLightProvider;
+import net.minecraft.world.lighting.LevelBasedGraph;
 import net.minecraft.world.lighting.LightDataMap;
 import net.minecraft.world.lighting.LightEngine;
 import net.minecraft.world.lighting.SectionLightStorage;
@@ -24,13 +25,11 @@ import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
-import java.util.Arrays;
 import java.util.BitSet;
 
 @Mixin(LightEngine.class)
-public class MixinLightEngine<M extends LightDataMap<M>, S extends SectionLightStorage<M>> implements LightEngineExtended, PendingUpdateListener {
-    private static long GLOBAL_TO_CHUNK_MASK = ~BlockPos.pack(0xF, 0xF, 0xF);
-
+public abstract class MixinLightEngine<M extends LightDataMap<M>, S extends SectionLightStorage<M>> extends LevelBasedGraph
+        implements LightEngineExtended, PendingUpdateListener {
     @Shadow
     @Final
     protected BlockPos.Mutable scratchPos;
@@ -41,10 +40,14 @@ public class MixinLightEngine<M extends LightDataMap<M>, S extends SectionLightS
 
     private LightEngineBlockAccess blockAccess;
 
-    private final Long2ObjectOpenHashMap<BitSet> pendingUpdatesByChunk = new Long2ObjectOpenHashMap<>(512, 0.25F);
+    private final Long2ObjectOpenHashMap<BitSet> buckets = new Long2ObjectOpenHashMap<>();
 
-    private BitSet[] lastChunkUpdateSets = new BitSet[2];
-    private long[] lastChunkPos = new long[2];
+    private long prevChunkBucketKey = Long.MIN_VALUE;
+    private BitSet prevChunkBucketSet;
+
+    protected MixinLightEngine(int levelCount, int p_i51298_2_, int p_i51298_3_) {
+        super(levelCount, p_i51298_2_, p_i51298_3_);
+    }
 
     @Inject(method = "<init>", at = @At("RETURN"))
     private void onConstructed(IChunkLightProvider lightProvider, LightType lightType, S storage, CallbackInfo ci) {
@@ -98,127 +101,113 @@ public class MixinLightEngine<M extends LightDataMap<M>, S extends SectionLightS
             return VoxelShapes.getFaceShape(state.getRenderShape(this.chunkProvider.getWorld(), this.scratchPos.setPos(x, y, z)), dir);
         }
     }
+
+
     /**
      * The vanilla implementation for removing pending light updates requires iterating over either every queued light
      * update (<8K checks) or every block position within a sub-chunk (16^3 checks). This is painfully slow and results
      * in a tremendous amount of CPU time being spent here when chunks are unloaded on the client and server.
      *
-     * To work around this, we maintain a list of queued updates by chunk position so we can simply select every light
-     * update within a chunk and drop them in one operation.
+     * To work around this, we maintain a bit-field of queued updates by chunk position so we can simply select every
+     * light update within a section without excessive iteration. The bit-field only requires 64 bytes of memory per
+     * section with queued updates, and does not require expensive hashing in order to track updates within it. In order
+     * to avoid as much overhead as possible when looking up a bit-field for a given chunk section, the previous lookup
+     * is cached and used where possible. The integer key for each bucket can be computed by performing a simple bit
+     * mask over the already-encoded block position value.
      */
     @Override
-    public void cancelUpdatesForChunk(long chunkPos) {
-        int chunkX = SectionPos.extractX(chunkPos);
-        int chunkY = SectionPos.extractY(chunkPos);
-        int chunkZ = SectionPos.extractZ(chunkPos);
+    public void cancelUpdatesForChunk(long sectionPos) {
+        long key = getBucketKeyForSection(sectionPos);
+        BitSet bits = this.removeChunkBucket(key);
 
-        long key = toChunkKey(BlockPos.pack(chunkX << 4, chunkY << 4, chunkZ << 4));
+        if (bits != null && !bits.isEmpty()) {
+            int startX = SectionPos.extractX(sectionPos) << 4;
+            int startY = SectionPos.extractY(sectionPos) << 4;
+            int startZ = SectionPos.extractZ(sectionPos) << 4;
 
-        BitSet set = this.pendingUpdatesByChunk.remove(key);
+            for (int i = bits.nextSetBit(0); i != -1; i = bits.nextSetBit(i + 1)) {
+                int x = (i >> 8) & 15;
+                int y = (i >> 4) & 15;
+                int z = i & 15;
 
-        if (set == null || set.isEmpty()) {
-            return;
+                this.cancelUpdatesForChunk(BlockPos.pack(startX + x, startY + y, startZ + z));
+            }
         }
-
-        this.resetUpdateSetCache();
-
-        int startX = chunkX << 4;
-        int startY = chunkY << 4;
-        int startZ = chunkZ << 4;
-
-        set.stream().forEach(i -> {
-            int x = (i >> 8) & 0xF;
-            int y = (i >> 4) & 0xF;
-            int z = i & 0xF;
-
-            this.cancelUpdatesForChunk(BlockPos.pack(startX + x, startY + y, startZ + z));
-        });
     }
 
     @Override
     public void onPendingUpdateRemoved(long blockPos) {
-        BitSet set = this.getUpdateSetFor(toChunkKey(blockPos));
+        long key = getBucketKeyForBlock(blockPos);
 
-        if (set != null) {
-            set.clear(toLocalKey(blockPos));
+        BitSet bits;
 
-            if (set.isEmpty()) {
-                this.pendingUpdatesByChunk.remove(toChunkKey(blockPos));
+        if (this.prevChunkBucketKey == key) {
+            bits = this.prevChunkBucketSet;
+        } else {
+            bits = this.buckets.get(key);
+
+            if (bits == null) {
+                return;
             }
+        }
+
+        bits.clear(getLocalIndex(blockPos));
+
+        if (bits.isEmpty()) {
+            this.removeChunkBucket(key);
         }
     }
 
     @Override
     public void onPendingUpdateAdded(long blockPos) {
-        BitSet set = this.getOrCreateUpdateSetFor(toChunkKey(blockPos));
-        set.set(toLocalKey(blockPos));
+        long key = getBucketKeyForBlock(blockPos);
+
+        BitSet bits;
+
+        if (this.prevChunkBucketKey == key) {
+            bits = this.prevChunkBucketSet;
+        } else {
+            bits = this.buckets.get(key);
+
+            if (bits == null) {
+                this.buckets.put(key, bits = new BitSet(16 * 16 * 16));
+            }
+
+            this.prevChunkBucketKey = key;
+            this.prevChunkBucketSet = bits;
+        }
+
+        bits.set(getLocalIndex(blockPos));
     }
 
-    private BitSet getUpdateSetFor(long chunkPos) {
-        BitSet set = this.getCachedUpdateSet(chunkPos);
+    // Used to mask a long-encoded block position into a bucket key by dropping the first 4 bits of each component
+    private static final long BLOCK_TO_BUCKET_KEY_MASK = ~BlockPos.pack(15, 15, 15);
 
-        if (set == null) {
-            set = this.pendingUpdatesByChunk.get(chunkPos);
+    private static long getBucketKeyForBlock(long blockPos) {
+        return blockPos & BLOCK_TO_BUCKET_KEY_MASK;
+    }
 
-            if (set != null) {
-                this.addUpdateSetToCache(chunkPos, set);
-            }
+    private static long getBucketKeyForSection(long sectionPos) {
+        return BlockPos.pack(SectionPos.extractX(sectionPos) << 4, SectionPos.extractY(sectionPos) << 4, SectionPos.extractZ(sectionPos) << 4);
+    }
+
+    private BitSet removeChunkBucket(long key) {
+        BitSet set = this.buckets.remove(key);
+
+        if (this.prevChunkBucketSet == set) {
+            this.prevChunkBucketKey = Long.MIN_VALUE;
+            this.prevChunkBucketSet = null;
         }
 
         return set;
     }
 
-    private BitSet getOrCreateUpdateSetFor(long chunkPos) {
-        BitSet set = this.getCachedUpdateSet(chunkPos);
+    // Finds the bit-flag index of a local position within a chunk section
+    private static int getLocalIndex(long blockPos) {
+        int x = BlockPos.unpackX(blockPos) & 15;
+        int y = BlockPos.unpackY(blockPos) & 15;
+        int z = BlockPos.unpackZ(blockPos) & 15;
 
-        if (set == null) {
-            set = this.pendingUpdatesByChunk.get(chunkPos);
-
-            if (set == null) {
-                this.pendingUpdatesByChunk.put(chunkPos, set = new BitSet(4096));
-                this.addUpdateSetToCache(chunkPos, set);
-            }
-        }
-
-        return set;
-    }
-
-    private BitSet getCachedUpdateSet(long chunkPos) {
-        long[] lastChunkPos = this.lastChunkPos;
-
-        for (int i = 0; i < lastChunkPos.length; i++) {
-            if (lastChunkPos[i] == chunkPos) {
-                return this.lastChunkUpdateSets[i];
-            }
-        }
-
-        return null;
-    }
-
-    private void addUpdateSetToCache(long chunkPos, BitSet set) {
-        long[] lastPos = this.lastChunkPos;
-        lastPos[1] = lastPos[0];
-        lastPos[0] = chunkPos;
-
-        BitSet[] lastSet = this.lastChunkUpdateSets;
-        lastSet[1] = lastSet[0];
-        lastSet[0] = set;
-    }
-
-    protected void resetUpdateSetCache() {
-        Arrays.fill(this.lastChunkPos, Long.MIN_VALUE);
-        Arrays.fill(this.lastChunkUpdateSets, null);
-    }
-
-    private static long toChunkKey(long blockPos) {
-        return blockPos & GLOBAL_TO_CHUNK_MASK;
-    }
-
-    private static int toLocalKey(long pos) {
-        int x = BlockPos.unpackX(pos) & 0xF;
-        int y = BlockPos.unpackY(pos) & 0xF;
-        int z = BlockPos.unpackZ(pos) & 0xF;
-
-        return x << 8 | y << 4 | z;
+        return (x << 8) | (y << 4) | z;
     }
 }
