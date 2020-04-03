@@ -155,7 +155,7 @@ curseforge {
 
         def displayNameBase = "${project.cf_project_name} mc${project.minecraft_version}-${project.version}"
 
-        mainArtifact(reobfJar) {
+        mainArtifact(jar) {
             displayName = displayNameBase
         }
     }
