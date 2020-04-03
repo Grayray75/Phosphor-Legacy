@@ -1,8 +1,7 @@
 package me.jellysquid.mods.phosphor.mixin.chunk.light;
 
-import me.jellysquid.mods.phosphor.common.chunk.ExtendedSectionLightStorage;
-import me.jellysquid.mods.phosphor.common.chunk.ExtendedSkyLightStorage;
-import me.jellysquid.mods.phosphor.common.chunk.ExtendedSkyLightStorageMap;
+import me.jellysquid.mods.phosphor.common.chunk.light.SectionLightStorageAccess;
+import me.jellysquid.mods.phosphor.common.chunk.light.SkyLightStorageMapAccess;
 import me.jellysquid.mods.phosphor.common.util.math.ChunkSectionPosHelper;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.SectionPos;
@@ -10,26 +9,9 @@ import net.minecraft.world.chunk.NibbleArray;
 import net.minecraft.world.lighting.SkyLightStorage;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
-import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(SkyLightStorage.class)
-public abstract class MixinSkyLightStorage implements ExtendedSkyLightStorage {
-    @Shadow
-    protected abstract boolean func_215551_l(long l);
-
-    @Shadow
-    protected abstract boolean func_215550_a(int blockY);
-
-    @Override
-    public boolean bridge$func_215551_l(long l) {
-        return this.func_215551_l(l);
-    }
-
-    @Override
-    public boolean bridge$func_215550_a(int blockY) {
-        return this.func_215550_a(blockY);
-    }
-
+public abstract class MixinSkyLightStorage {
     /**
      * An optimized implementation which avoids constantly unpacking and repacking integer coordinates.
      *
@@ -49,12 +31,12 @@ public abstract class MixinSkyLightStorage implements ExtendedSkyLightStorage {
 
         long chunk = SectionPos.asLong(chunkX, chunkY, chunkZ);
 
-        SkyLightStorage.StorageMap data = ((ExtendedSectionLightStorage<SkyLightStorage.StorageMap>) this).bridge$getStorageUncached();
+        SkyLightStorage.StorageMap data = ((SectionLightStorageAccess<SkyLightStorage.StorageMap>) this).bridge$getStorageUncached();
 
-        int h = ((ExtendedSkyLightStorageMap) (Object) data).bridge$heightMap().get(SectionPos.toSectionColumnPos(chunk));
+        int h = ((SkyLightStorageMapAccess) (Object) data).getHeightMap().get(SectionPos.toSectionColumnPos(chunk));
 
-        if (h != ((ExtendedSkyLightStorageMap) (Object) data).bridge$defaultHeight() && chunkY < h) {
-            NibbleArray array = ((ExtendedSectionLightStorage<SkyLightStorage.StorageMap>) this).bridge$getDataForChunk(data, chunk);
+        if (h != ((SkyLightStorageMapAccess) (Object) data).getDefaultHeight() && chunkY < h) {
+            NibbleArray array = data.getArray(chunk);
 
             if (array == null) {
                 posY &= -16;
@@ -68,7 +50,7 @@ public abstract class MixinSkyLightStorage implements ExtendedSkyLightStorage {
 
                     chunk = ChunkSectionPosHelper.updateYLong(chunk, chunkY);
                     posY += 16;
-                    array = ((ExtendedSectionLightStorage<SkyLightStorage.StorageMap>) this).bridge$getDataForChunk(data, chunk);
+                    array = data.getArray(chunk);
                 }
             }
 

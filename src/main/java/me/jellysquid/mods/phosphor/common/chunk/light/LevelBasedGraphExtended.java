@@ -1,9 +1,9 @@
-package me.jellysquid.mods.phosphor.common.chunk;
+package me.jellysquid.mods.phosphor.common.chunk.light;
 
 import net.minecraft.block.BlockState;
 import net.minecraft.world.lighting.LevelBasedGraph;
 
-public interface ExtendedLightEngine {
+public interface LevelBasedGraphExtended {
     /**
      * Mirrors {@link LevelBasedGraph#notifyNeighbors(long, int, boolean)}, but allows a block state to be passed to
      * prevent subsequent lookup later.
@@ -15,9 +15,4 @@ public interface ExtendedLightEngine {
      * block state belonging to {@param sourceId}.
      */
     int getEdgeLevel(long sourceId, BlockState sourceState, long targetId, int level);
-
-    /**
-     * Removes all pending light updates within the specified sub-chunk.
-     */
-    void cancelUpdatesForChunk(long chunkPos);
 }

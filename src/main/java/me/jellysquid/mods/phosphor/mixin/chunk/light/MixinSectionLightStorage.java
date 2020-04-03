@@ -1,8 +1,8 @@
 package me.jellysquid.mods.phosphor.mixin.chunk.light;
 
 import it.unimi.dsi.fastutil.longs.LongSet;
-import me.jellysquid.mods.phosphor.common.chunk.ExtendedLightEngine;
-import me.jellysquid.mods.phosphor.common.chunk.ExtendedSectionLightStorage;
+import me.jellysquid.mods.phosphor.common.chunk.light.LightEngineExtended;
+import me.jellysquid.mods.phosphor.common.chunk.light.SectionLightStorageAccess;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.SectionPos;
 import net.minecraft.world.chunk.NibbleArray;
@@ -15,7 +15,7 @@ import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 
 @Mixin(SectionLightStorage.class)
-public abstract class MixinSectionLightStorage<M extends LightDataMap<M>> implements ExtendedSectionLightStorage<M> {
+public abstract class MixinSectionLightStorage<M extends LightDataMap<M>> implements SectionLightStorageAccess<M> {
     @Shadow
     @Final
     protected M cachedLightData;
@@ -182,21 +182,11 @@ public abstract class MixinSectionLightStorage<M extends LightDataMap<M>> implem
      */
     @Inject(method = "cancelSectionUpdates", at = @At("HEAD"), cancellable = true)
     protected void removeChunkData(LightEngine<?, ?> engine, long pos, CallbackInfo ci) {
-        if (engine instanceof ExtendedLightEngine) {
-            ((ExtendedLightEngine) engine).cancelUpdatesForChunk(pos);
+        if (engine instanceof LightEngineExtended) {
+            ((LightEngineExtended) engine).cancelUpdatesForChunk(pos);
 
             ci.cancel();
         }
-    }
-
-    @Override
-    public boolean bridge$hasChunk(long chunkPos) {
-        return this.hasSection(chunkPos);
-    }
-
-    @Override
-    public NibbleArray bridge$getDataForChunk(M data, long chunkPos) {
-        return data.getArray(chunkPos);
     }
 
     @Override

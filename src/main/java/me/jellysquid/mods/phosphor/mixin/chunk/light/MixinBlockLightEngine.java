@@ -1,8 +1,7 @@
 package me.jellysquid.mods.phosphor.mixin.chunk.light;
 
-import me.jellysquid.mods.phosphor.common.chunk.ExtendedChunkLightProvider;
-import me.jellysquid.mods.phosphor.common.chunk.ExtendedGenericLightStorage;
-import me.jellysquid.mods.phosphor.common.chunk.ExtendedLightEngine;
+import me.jellysquid.mods.phosphor.common.chunk.light.LevelBasedGraphExtended;
+import me.jellysquid.mods.phosphor.common.chunk.light.LightEngineExtended;
 import me.jellysquid.mods.phosphor.common.util.math.DirectionHelper;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.Direction;
@@ -24,7 +23,7 @@ import static net.minecraft.util.math.SectionPos.toChunk;
 
 @Mixin(BlockLightEngine.class)
 public abstract class MixinBlockLightEngine extends LightEngine<BlockLightStorage.StorageMap, BlockLightStorage>
-        implements ExtendedLightEngine, ExtendedChunkLightProvider {
+        implements LevelBasedGraphExtended, LightEngineExtended {
     public MixinBlockLightEngine(IChunkLightProvider lightProvider, LightType type, BlockLightStorage storage) {
         super(lightProvider, type, storage);
     }
@@ -132,7 +131,7 @@ public abstract class MixinBlockLightEngine extends LightEngine<BlockLightStorag
 
             long adjChunk = SectionPos.asLong(toChunk(adjX), toChunk(adjY), toChunk(adjZ));
 
-            if ((chunk == adjChunk) || ((ExtendedGenericLightStorage) this.storage).bridge$hasChunk(adjChunk)) {
+            if ((chunk == adjChunk) || this.storage.hasSection(adjChunk)) {
                 this.notifyNeighbors(id, state, BlockPos.pack(adjX, adjY, adjZ), targetLevel, mergeAsMin);
             }
         }
