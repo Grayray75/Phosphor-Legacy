@@ -102,7 +102,6 @@ public abstract class MixinLightEngine<M extends LightDataMap<M>, S extends Sect
         }
     }
 
-
     /**
      * The vanilla implementation for removing pending light updates requires iterating over either every queued light
      * update (<8K checks) or every block position within a sub-chunk (16^3 checks). This is painfully slow and results
@@ -130,7 +129,7 @@ public abstract class MixinLightEngine<M extends LightDataMap<M>, S extends Sect
                 int y = (i >> 4) & 15;
                 int z = i & 15;
 
-                this.cancelUpdatesForChunk(BlockPos.pack(startX + x, startY + y, startZ + z));
+                this.cancelUpdate(BlockPos.pack(startX + x, startY + y, startZ + z));
             }
         }
     }
