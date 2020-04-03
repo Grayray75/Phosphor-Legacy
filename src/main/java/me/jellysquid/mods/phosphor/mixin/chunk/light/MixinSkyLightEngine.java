@@ -2,6 +2,7 @@ package me.jellysquid.mods.phosphor.mixin.chunk.light;
 
 import me.jellysquid.mods.phosphor.common.chunk.light.LevelBasedGraphExtended;
 import me.jellysquid.mods.phosphor.common.chunk.light.LightEngineExtended;
+import me.jellysquid.mods.phosphor.common.util.LightUtil;
 import me.jellysquid.mods.phosphor.common.util.math.ChunkSectionPosHelper;
 import me.jellysquid.mods.phosphor.common.util.math.DirectionHelper;
 import net.minecraft.block.BlockState;
@@ -114,7 +115,7 @@ public abstract class MixinSkyLightEngine extends LightEngine<SkyLightStorage.St
             if (toShape != VoxelShapes.fullCube()) {
                 VoxelShape fromShape = this.getOpaqueShape(fromState, fromX, fromY, fromZ, dir);
 
-                if (VoxelShapes.faceShapeCovers(fromShape, toShape)) {
+                if (LightUtil.faceShapeCovers(fromShape, toShape)) {
                     return 15;
                 }
             }
@@ -127,13 +128,13 @@ public abstract class MixinSkyLightEngine extends LightEngine<SkyLightStorage.St
 
             VoxelShape toShape = this.getOpaqueShape(toState, toX, toY, toZ, altDir.getOpposite());
 
-            if (VoxelShapes.faceShapeCovers(VoxelShapes.empty(), toShape)) {
+            if (LightUtil.faceShapeCovers(VoxelShapes.empty(), toShape)) {
                 return 15;
             }
 
             VoxelShape fromShape = this.getOpaqueShape(fromState, fromX, fromY, fromZ, Direction.DOWN);
 
-            if (VoxelShapes.faceShapeCovers(fromShape, VoxelShapes.empty())) {
+            if (LightUtil.faceShapeCovers(fromShape, VoxelShapes.empty())) {
                 return 15;
             }
         }

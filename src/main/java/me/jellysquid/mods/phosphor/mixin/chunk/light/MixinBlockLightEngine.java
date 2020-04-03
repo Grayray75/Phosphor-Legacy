@@ -2,13 +2,13 @@ package me.jellysquid.mods.phosphor.mixin.chunk.light;
 
 import me.jellysquid.mods.phosphor.common.chunk.light.LevelBasedGraphExtended;
 import me.jellysquid.mods.phosphor.common.chunk.light.LightEngineExtended;
+import me.jellysquid.mods.phosphor.common.util.LightUtil;
 import me.jellysquid.mods.phosphor.common.util.math.DirectionHelper;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.Direction;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.SectionPos;
 import net.minecraft.util.math.shapes.VoxelShape;
-import net.minecraft.util.math.shapes.VoxelShapes;
 import net.minecraft.world.LightType;
 import net.minecraft.world.chunk.IChunkLightProvider;
 import net.minecraft.world.lighting.BlockLightEngine;
@@ -100,7 +100,7 @@ public abstract class MixinBlockLightEngine extends LightEngine<BlockLightStorag
             VoxelShape aShape = this.getOpaqueShape(fromState, fromX, fromY, fromZ, dir);
             VoxelShape bShape = this.getOpaqueShape(toState, toX, toY, toZ, dir.getOpposite());
 
-            if (!VoxelShapes.faceShapeCovers(aShape, bShape)) {
+            if (!LightUtil.faceShapeCovers(aShape, bShape)) {
                 return currentLevel + Math.max(1, newLevel);
             }
         }
