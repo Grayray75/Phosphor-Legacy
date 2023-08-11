@@ -55,10 +55,9 @@ public class LightingHooks {
                 final int xOffset = dir.getOffsetX();
                 final int zOffset = dir.getOffsetZ();
 
-                final boolean neighborColumnExists =
-                        (((x + xOffset) | (z + zOffset)) & 16) == 0
-                                //Checks whether the position is at the specified border (the 16 bit is set for both 15+1 and 0-1)
-                                || world.getChunkProvider().getLoadedChunk(chunk.chunkX + xOffset, chunk.chunkZ + zOffset) != null;
+                final boolean neighborColumnExists = (((x + xOffset) | (z + zOffset)) & 16) == 0
+                        //Checks whether the position is at the specified border (the 16 bit is set for both 15+1 and 0-1)
+                        || world.getChunkProvider().getLoadedChunk(chunk.chunkX + xOffset, chunk.chunkZ + zOffset) != null;
 
                 if (neighborColumnExists) {
                     for (int sec = yMax >> 4; sec >= yMin >> 4; --sec) {
@@ -66,15 +65,15 @@ public class LightingHooks {
                             scheduleRelightChecksForColumn(world, LightType.SKY, xBase + xOffset, zBase + zOffset, sec << 4, (sec << 4) + 15);
                         }
                     }
-                } else {
+                }
+                else {
                     flagChunkBoundaryForUpdate(chunk, emptySections, LightType.SKY, dir, getAxisDirection(dir, x, z), EnumBoundaryFacing.OUT);
                 }
             }
         }
     }
 
-    public static void scheduleRelightChecksForArea(final World world, final LightType lightType, final int xMin, final int yMin, final int zMin,
-                                                    final int xMax, final int yMax, final int zMax) {
+    public static void scheduleRelightChecksForArea(final World world, final LightType lightType, final int xMin, final int yMin, final int zMin, final int xMax, final int yMax, final int zMax) {
         for (int x = xMin; x <= xMax; ++x) {
             for (int z = zMin; z <= zMax; ++z) {
                 scheduleRelightChecksForColumn(world, lightType, x, z, yMin, yMax);
@@ -98,26 +97,21 @@ public class LightingHooks {
         }
     }
 
-    public static void flagSecBoundaryForUpdate(final Chunk chunk, final BlockPos pos, final LightType lightType, final Direction dir,
-                                                final EnumBoundaryFacing boundaryFacing) {
+    public static void flagSecBoundaryForUpdate(final Chunk chunk, final BlockPos pos, final LightType lightType, final Direction dir, final EnumBoundaryFacing boundaryFacing) {
         flagChunkBoundaryForUpdate(chunk, (short) (1 << (pos.getY() >> 4)), lightType, dir, getAxisDirection(dir, pos.getX(), pos.getZ()), boundaryFacing);
     }
 
-    public static void flagChunkBoundaryForUpdate(final Chunk chunk, final short sectionMask, final LightType lightType, final Direction dir,
-                                                  final Direction.AxisDirection axisDirection, final EnumBoundaryFacing boundaryFacing) {
+    public static void flagChunkBoundaryForUpdate(final Chunk chunk, final short sectionMask, final LightType lightType, final Direction dir, final Direction.AxisDirection axisDirection, final EnumBoundaryFacing boundaryFacing) {
         initNeighborLightChecks(chunk);
         ((IChunkLightingData) chunk).getNeighborLightChecks()[getFlagIndex(lightType, dir, axisDirection, boundaryFacing)] |= sectionMask;
         chunk.setModified();
     }
 
-    public static int getFlagIndex(final LightType lightType, final int xOffset, final int zOffset, final Direction.AxisDirection axisDirection,
-                                   final EnumBoundaryFacing boundaryFacing) {
-        return (lightType == LightType.BLOCK ? 0 : 16) | ((xOffset + 1) << 2) | ((zOffset + 1) << 1) | (axisDirection.offset() + 1) | boundaryFacing
-                .ordinal();
+    public static int getFlagIndex(final LightType lightType, final int xOffset, final int zOffset, final Direction.AxisDirection axisDirection, final EnumBoundaryFacing boundaryFacing) {
+        return (lightType == LightType.BLOCK ? 0 : 16) | ((xOffset + 1) << 2) | ((zOffset + 1) << 1) | (axisDirection.offset() + 1) | boundaryFacing.ordinal();
     }
 
-    public static int getFlagIndex(final LightType lightType, final Direction dir, final Direction.AxisDirection axisDirection,
-                                   final EnumBoundaryFacing boundaryFacing) {
+    public static int getFlagIndex(final LightType lightType, final Direction dir, final Direction.AxisDirection axisDirection, final EnumBoundaryFacing boundaryFacing) {
         return getFlagIndex(lightType, dir.getOffsetX(), dir.getOffsetZ(), axisDirection, boundaryFacing);
     }
 
@@ -148,17 +142,14 @@ public class LightingHooks {
                     scheduleRelightChecksForBoundary(world, chunk, nChunk, null, lightType, xOffset, zOffset, axisDir);
                     scheduleRelightChecksForBoundary(world, nChunk, chunk, null, lightType, -xOffset, -zOffset, axisDir);
                     //The boundary to the diagonal neighbor (since the checks in that chunk were aborted if this chunk wasn't loaded, see scheduleRelightChecksForBoundary)
-                    scheduleRelightChecksForBoundary(world, nChunk, null, chunk, lightType, (zOffset != 0 ? axisDir.offset() : 0),
-                            (xOffset != 0 ? axisDir.offset() : 0), dir.getAxisDirection() == Direction.AxisDirection.POSITIVE ?
-                                    Direction.AxisDirection.NEGATIVE :
-                                    Direction.AxisDirection.POSITIVE);
+                    scheduleRelightChecksForBoundary(world, nChunk, null, chunk, lightType, (zOffset != 0 ? axisDir.offset() : 0), (xOffset != 0 ? axisDir.offset() : 0),
+                            dir.getAxisDirection() == Direction.AxisDirection.POSITIVE ? Direction.AxisDirection.NEGATIVE : Direction.AxisDirection.POSITIVE);
                 }
             }
         }
     }
 
-    private static void mergeFlags(final LightType lightType, final Chunk inChunk, final Chunk outChunk, final Direction dir,
-                                   final Direction.AxisDirection axisDir) {
+    private static void mergeFlags(final LightType lightType, final Chunk inChunk, final Chunk outChunk, final Direction dir, final Direction.AxisDirection axisDir) {
         IChunkLightingData outChunkLightingData = (IChunkLightingData) outChunk;
 
         if (outChunkLightingData.getNeighborLightChecks() == null) {
@@ -176,8 +167,7 @@ public class LightingHooks {
         //no need to call Chunk.setModified() since checks are not deleted from outChunk
     }
 
-    private static void scheduleRelightChecksForBoundary(final World world, final Chunk chunk, Chunk nChunk, Chunk sChunk, final LightType lightType,
-                                                         final int xOffset, final int zOffset, final Direction.AxisDirection axisDir) {
+    private static void scheduleRelightChecksForBoundary(final World world, final Chunk chunk, Chunk nChunk, Chunk sChunk, final LightType lightType, final int xOffset, final int zOffset, final Direction.AxisDirection axisDir) {
         IChunkLightingData chunkLightingData = (IChunkLightingData) chunk;
 
         if (chunkLightingData.getNeighborLightChecks() == null) {
@@ -201,8 +191,7 @@ public class LightingHooks {
         }
 
         if (sChunk == null) {
-            sChunk = world.getChunkProvider()
-                    .getLoadedChunk(chunk.chunkX + (zOffset != 0 ? axisDir.offset() : 0), chunk.chunkZ + (xOffset != 0 ? axisDir.offset() : 0));
+            sChunk = world.getChunkProvider().getLoadedChunk(chunk.chunkX + (zOffset != 0 ? axisDir.offset() : 0), chunk.chunkZ + (xOffset != 0 ? axisDir.offset() : 0));
 
             if (sChunk == null) {
                 return; //Cancel, since the checks in the corner columns require the corner column of sChunk
@@ -296,7 +285,8 @@ public class LightingHooks {
                 for (int i = 0; i < FLAG_COUNT; ++i) {
                     neighborLightChecks[i] = ((NbtShort) list.get(i)).shortValue();
                 }
-            } else {
+            }
+            else {
                 PhosphorMod.LOGGER.warn("Chunk field {} had invalid length, ignoring it (chunk coordinates: {} {})", neighborLightChecksKey, chunk.chunkX, chunk.chunkZ);
             }
         }
@@ -323,10 +313,10 @@ public class LightingHooks {
                 for (int y = 0; y < 16; y++) {
                     for (int z = 0; z < 16; z++) {
                         for (int x = 0; x < 16; x++) {
-                            int key = ((PaletteContainerAccessor)((ChunkSectionAccessor)section).getData()).getStorage().get(y << 8 | z << 4 | x);
+                            int key = ((PaletteContainerAccessor) ((ChunkSectionAccessor) section).getData()).getStorage().get(y << 8 | z << 4 | x);
 
                             if (key != 0) {
-                                BlockState state = ((PaletteContainerAccessor)((ChunkSectionAccessor)section).getData()).getPalette().getStateForId(key);
+                                BlockState state = ((PaletteContainerAccessor) ((ChunkSectionAccessor) section).getData()).getPalette().getStateForId(key);
 
                                 if (state != null) {
                                     int light = state.getLuminance();

@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(ChunkSection.class)
-public class ChunkSectionMixin {
+public abstract class ChunkSectionMixin {
     @Shadow
     private ChunkNibbleArray skyLight;
 
@@ -72,10 +72,10 @@ public class ChunkSectionMixin {
 
         // -1 indicates the lightRefCount needs to be re-calculated
         if (this.lightRefCount == -1) {
-            if (this.checkLightArrayEqual(this.skyLight, (byte) 0xFF)
-                    && this.checkLightArrayEqual(this.blockLight, (byte) 0x00)) {
+            if (this.checkLightArrayEqual(this.skyLight, (byte) 0xFF) && this.checkLightArrayEqual(this.blockLight, (byte) 0x00)) {
                 this.lightRefCount = 0; // Lighting is trivial, don't send to clients
-            } else {
+            }
+            else {
                 this.lightRefCount = 1; // Lighting is not trivial, send to clients
             }
         }

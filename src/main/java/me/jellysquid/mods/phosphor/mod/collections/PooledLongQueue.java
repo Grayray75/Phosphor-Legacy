@@ -33,6 +33,7 @@ public class PooledLongQueue {
 
     /**
      * Thread-safe method to check whether or not this queue has work to do. Significantly cheaper than acquiring a lock.
+     *
      * @return True if the queue is empty, otherwise false
      */
     public boolean isEmpty() {
@@ -41,6 +42,7 @@ public class PooledLongQueue {
 
     /**
      * Not thread-safe! Adds an encoded long value into this queue.
+     *
      * @param val The encoded value to add
      */
     public void add(final long val) {
@@ -54,7 +56,8 @@ public class PooledLongQueue {
             ret.longArray[ret.index++] = val;
 
             this.last = ret;
-        } else {
+        }
+        else {
             this.last.longArray[this.last.index++] = val;
         }
 
@@ -63,6 +66,7 @@ public class PooledLongQueue {
 
     /**
      * Not thread safe! Creates an iterator over the values in this queue. Values will be returned in a FIFO fashion.
+     *
      * @return The iterator
      */
     public LongQueueIterator iterator() {
@@ -160,5 +164,4 @@ public class PooledLongQueue {
             this.pool.release(this);
         }
     }
-
 }

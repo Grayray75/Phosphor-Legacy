@@ -6,6 +6,7 @@ import com.google.gson.annotations.SerializedName;
 
 import java.io.*;
 
+// TODO: this is currently not used
 // This class will be initialized very early and should never load any game/mod code.
 public class PhosphorConfig {
     private static final Gson gson = createGson();
@@ -30,7 +31,8 @@ public class PhosphorConfig {
         if (!file.exists()) {
             config = new PhosphorConfig();
             config.saveConfig();
-        } else {
+        }
+        else {
             try (Reader reader = new FileReader(file)) {
                 config = gson.fromJson(reader, PhosphorConfig.class);
             } catch (IOException e) {
@@ -50,7 +52,8 @@ public class PhosphorConfig {
             if (!dir.mkdirs()) {
                 throw new RuntimeException("Could not create configuration directory at '" + dir.getAbsolutePath() + "'");
             }
-        } else if (!dir.isDirectory()) {
+        }
+        else if (!dir.isDirectory()) {
             throw new RuntimeException("Configuration directory at '" + dir.getAbsolutePath() + "' is not a directory");
         }
 

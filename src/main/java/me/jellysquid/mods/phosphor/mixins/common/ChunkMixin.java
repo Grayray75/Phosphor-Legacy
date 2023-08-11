@@ -44,10 +44,6 @@ public abstract class ChunkMixin implements IChunkLighting, IChunkLightingData, 
 
     @Shadow
     @Final
-    private int[] surfaceCache;
-
-    @Shadow
-    @Final
     private World world;
 
     @Shadow
@@ -67,12 +63,6 @@ public abstract class ChunkMixin implements IChunkLighting, IChunkLightingData, 
 
     @Shadow
     private boolean field_4742;
-
-    @Shadow
-    public abstract BlockEntity getBlockEntity(BlockPos pos, Chunk.Status status);
-
-    @Shadow
-    public abstract BlockState getBlockState(BlockPos pos);
 
     @Shadow
     protected abstract int getBlockOpacity(int x, int y, int z);
@@ -164,7 +154,6 @@ public abstract class ChunkMixin implements IChunkLighting, IChunkLightingData, 
     /**
      * @reason Hook for calculating light updates only as needed. {@link ChunkMixin#getCachedLightFor(LightType, BlockPos)} does not
      * call this hook.
-     *
      * @author JellySquid
      */
     @Overwrite
@@ -176,7 +165,6 @@ public abstract class ChunkMixin implements IChunkLighting, IChunkLightingData, 
 
     /**
      * @reason Hooks into checkLight() to check chunk lighting and returns immediately after, voiding the rest of the function.
-     *
      * @author JellySquid
      */
     @Overwrite
@@ -188,7 +176,6 @@ public abstract class ChunkMixin implements IChunkLighting, IChunkLightingData, 
 
     /**
      * @reason Optimized version of recheckGaps. Avoids chunk fetches as much as possible.
-     *
      * @author JellySquid
      */
     @Overwrite
@@ -273,7 +260,8 @@ public abstract class ChunkMixin implements IChunkLighting, IChunkLightingData, 
 
         if (i > maxValue) {
             this.updateSkylightNeighborHeight(slice, x, z, maxValue, i + 1);
-        } else if (i < maxValue) {
+        }
+        else if (i < maxValue) {
             this.updateSkylightNeighborHeight(slice, x, z, i, maxValue + 1);
         }
     }
@@ -342,32 +330,36 @@ public abstract class ChunkMixin implements IChunkLighting, IChunkLightingData, 
         int j = pos.getY();
         int k = pos.getZ() & 15;
 
-        ChunkSection extendedblockstorage = this.chunkSections[j >> 4];
+        ChunkSection section = this.chunkSections[j >> 4];
 
-        if (extendedblockstorage == Chunk.EMPTY) {
+        if (section == Chunk.EMPTY) {
             if (this.hasDirectSunlight(pos)) {
                 return lightType.defaultValue;
-            } else {
+            }
+            else {
                 return 0;
             }
-        } else if (lightType == LightType.SKY) {
-            // In Minecraft there is no dimension.hasSkyLight() funtion, I guess it was added by forge
+        }
+        else if (lightType == LightType.SKY) {
+            // In Minecraft there is no dimension.hasSkyLight() function, I guess it was added by forge
             // Because this checks if the dimension can see the sky, I guess it looks for the nether and end?
             //if (!this.world.dimension.hasSkyLight()) {
             if (!this.world.dimension.isOverworld()) {
                 return 0;
-            } else {
-                return extendedblockstorage.getSkyLight(i, j & 15, k);
             }
-        } else {
+            else {
+                return section.getSkyLight(i, j & 15, k);
+            }
+        }
+        else {
             if (lightType == LightType.BLOCK) {
-                return extendedblockstorage.getBlockLight(i, j & 15, k);
-            } else {
+                return section.getBlockLight(i, j & 15, k);
+            }
+            else {
                 return lightType.defaultValue;
             }
         }
     }
-
 
     // === END OF INTERFACE IMPL ===
 }

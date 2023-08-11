@@ -21,12 +21,11 @@ public class LightingEngineHelpers {
         final int y = pos.getY();
         final int z = pos.getZ();
 
-        if (section != Chunk.EMPTY)
-        {
-            int i = ((PaletteContainerAccessor)((ChunkSectionAccessor)section).getData()).getStorage().get((y & 15) << 8 | (z & 15) << 4 | x & 15);
+        if (section != Chunk.EMPTY) {
+            int i = ((PaletteContainerAccessor) ((ChunkSectionAccessor) section).getData()).getStorage().get((y & 15) << 8 | (z & 15) << 4 | x & 15);
 
             if (i != 0) {
-                BlockState state = ((PaletteContainerAccessor)((ChunkSectionAccessor)section).getData()).getPalette().getStateForId(i);
+                BlockState state = ((PaletteContainerAccessor) ((ChunkSectionAccessor) section).getData()).getPalette().getStateForId(i);
 
                 if (state != null) {
                     return state;

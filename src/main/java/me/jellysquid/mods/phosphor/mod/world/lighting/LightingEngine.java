@@ -3,14 +3,12 @@ package me.jellysquid.mods.phosphor.mod.world.lighting;
 import me.jellysquid.mods.phosphor.api.IChunkLighting;
 import me.jellysquid.mods.phosphor.api.ILightingEngine;
 import me.jellysquid.mods.phosphor.mixins.DirectionAccessor;
-import me.jellysquid.mods.phosphor.mod.PhosphorMod;
 import me.jellysquid.mods.phosphor.mod.collections.PooledLongQueue;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.block.BlockState;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Direction;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3i;
 import net.minecraft.util.profiler.Profiler;
@@ -26,7 +24,7 @@ public class LightingEngine implements ILightingEngine {
 
     private static final int MAX_LIGHT = 15;
 
-    private final Thread ownedThread = Thread.currentThread();
+    //private final Thread ownedThread = Thread.currentThread();
 
     private final World world;
 
@@ -155,7 +153,6 @@ public class LightingEngine implements ILightingEngine {
 
     /**
      * Calls {@link ILightingEngine#processLightUpdatesForType(LightType)} for both light types
-     *
      */
     @Override
     public void processLightUpdates() {
@@ -261,7 +258,8 @@ public class LightingEngine implements ILightingEngine {
             if (oldLight < newLight) {
                 //don't enqueue directly for brightening in order to avoid duplicate scheduling
                 this.initialBrightenings.add(((long) newLight << sL) | this.curData);
-            } else if (oldLight > newLight) {
+            }
+            else if (oldLight > newLight) {
                 //don't enqueue directly for darkening in order to avoid duplicate scheduling
                 this.initialDarkenings.add(this.curData);
             }
@@ -309,7 +307,8 @@ public class LightingEngine implements ILightingEngine {
 
                 if (luminosity >= MAX_LIGHT - 1) {
                     opacity = 1;
-                } else {
+                }
+                else {
                     opacity = this.getPosOpacity(this.curPos, state);
                 }
 
@@ -338,7 +337,8 @@ public class LightingEngine implements ILightingEngine {
                         if (curLight - this.getPosOpacity(nPos, LightingEngineHelpers.posToState(nPos, info.section)) >= nLight) //schedule neighbor for darkening if we possibly light it
                         {
                             this.enqueueDarkening(nPos, info.key, nLight, nChunk, lightType);
-                        } else //only use for new light calculation if not
+                        }
+                        else //only use for new light calculation if not
                         {
                             //if we can't darken the neighbor, no one else can (because of processing order) -> safe to let us be illuminated by it
                             newLight = Math.max(newLight, nLight - opacity);
@@ -347,7 +347,8 @@ public class LightingEngine implements ILightingEngine {
 
                     //schedule brightening since light level was set to 0
                     this.enqueueBrighteningFromCursor(newLight, lightType);
-                } else //we didn't become darker, so we need to re-set our initial light value (was set to 0) and notify neighbors
+                }
+                else //we didn't become darker, so we need to re-set our initial light value (was set to 0) and notify neighbors
                 {
                     this.enqueueBrighteningFromCursor(curLight, lightType); //do not spread to neighbors immediately to avoid scheduling multiple times
                 }
@@ -406,7 +407,8 @@ public class LightingEngine implements ILightingEngine {
 
             if ((nLongPos & mChunk) == this.curChunkIdentifier) {
                 nChunk = info.chunk = this.curChunk;
-            } else {
+            }
+            else {
                 nChunk = info.chunk = this.getChunk(nPos);
             }
 
@@ -420,27 +422,32 @@ public class LightingEngine implements ILightingEngine {
     }
 
 
-    private static int getCachedLightFor(Chunk chunk, ChunkSection storage, BlockPos pos, LightType lightType) {
+    private static int getCachedLightFor(Chunk chunk, ChunkSection section, BlockPos pos, LightType lightType) {
         int i = pos.getX() & 15;
         int j = pos.getY();
         int k = pos.getZ() & 15;
 
-        if (storage == Chunk.EMPTY) {
+        if (section == Chunk.EMPTY) {
             if (lightType == LightType.SKY && chunk.hasDirectSunlight(pos)) {
                 return lightType.defaultValue;
-            } else {
+            }
+            else {
                 return 0;
             }
-        } else if (lightType == LightType.SKY) {
+        }
+        else if (lightType == LightType.SKY) {
             if (!chunk.getWorld().dimension.isOverworld()) {
                 return 0;
-            } else {
-                return storage.getSkyLight(i, j & 15, k);
             }
-        } else {
+            else {
+                return section.getSkyLight(i, j & 15, k);
+            }
+        }
+        else {
             if (lightType == LightType.BLOCK) {
-                return storage.getBlockLight(i, j & 15, k);
-            } else {
+                return section.getBlockLight(i, j & 15, k);
+            }
+            else {
                 return lightType.defaultValue;
             }
         }
@@ -455,7 +462,8 @@ public class LightingEngine implements ILightingEngine {
 
         if (luminosity >= MAX_LIGHT - 1) {
             opacity = 1;
-        } else {
+        }
+        else {
             opacity = this.getPosOpacity(this.curPos, state);
         }
 
@@ -584,7 +592,8 @@ public class LightingEngine implements ILightingEngine {
         if (lightType == LightType.SKY) {
             if (this.curChunk.hasDirectSunlight(this.curPos)) {
                 return LightType.SKY.defaultValue;
-            } else {
+            }
+            else {
                 return 0;
             }
         }
