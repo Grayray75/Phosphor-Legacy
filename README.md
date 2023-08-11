@@ -12,7 +12,7 @@ Phosphor is a free and open-source Minecraft mod aiming to save your CPU cycles 
 It works on **both the client and server**, and can be installed on servers **without requiring clients to also have the mod**.
 
 <p align="center">
-  <img src="./doc/benchmarks.png" />
+  <img src="./media/benchmark.png" />
 </p>
 
 _For more information about how these results were obtained, [please see my writeup on the benchmarking methodology](https://web.archive.org/web/20201112021842/https://gist.github.com/jellysquid3/3b545be9c00cc59fe5c68927d03ec708)._
