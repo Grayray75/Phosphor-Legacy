@@ -1,6 +1,14 @@
-# Phosphor-legacy
+# Phosphor-Legacy
 
-Phosphor is a free and open-source Minecraft mod (under GNU GPLv3) aiming to save your CPU cycles and improve performance by optimizing one of Minecraft's most inefficient areas-- the lighting engine.
+Phosphor-Legacy is port of JellySquid's Phosphor mod to Legacy-Fabric.
+
+Currently this just the original 1.12.2 code changed in order to work with fabric.
+
+I do plan on backporting this mod to 1.8.9 if thats even possible.
+
+# Phosphor
+
+Phosphor is a free and open-source Minecraft mod aiming to save your CPU cycles and improve performance by optimizing one of Minecraft's most inefficient areas: the lighting engine.
 It works on **both the client and server**, and can be installed on servers **without requiring clients to also have the mod**.
 
 <p align="center">
