@@ -1,8 +1,8 @@
 package me.jellysquid.mods.phosphor.mixins.lighting.common;
 
 import me.jellysquid.mods.phosphor.api.ILightingEngineProvider;
-import net.minecraft.world.WorldServer;
-import net.minecraft.world.gen.ChunkProviderServer;
+import net.minecraft.server.world.ServerWorld;
+import net.minecraft.world.chunk.ServerChunkProvider;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -12,22 +12,22 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 import java.util.Set;
 
-@Mixin(ChunkProviderServer.class)
+@Mixin(ServerChunkProvider.class)
 public abstract class MixinChunkProviderServer {
     @Shadow
     @Final
-    public WorldServer world;
+    private ServerWorld world;
 
     @Shadow
     @Final
-    private Set<Long> droppedChunks;
+    private Set<Long> chunksToUnload;
 
     /**
      * Injects a callback into the start of saveChunks(boolean) to force all light updates to be processed before saving.
      *
-     * @author Angeline
+     * @author JellySquid
      */
-    @Inject(method = "saveChunks", at = @At("HEAD"))
+    @Inject(method = "method_12776", at = @At("HEAD"))
     private void onSaveChunks(boolean all, CallbackInfoReturnable<Boolean> cir) {
         ((ILightingEngineProvider) this.world).getLightingEngine().processLightUpdates();
     }
@@ -36,12 +36,12 @@ public abstract class MixinChunkProviderServer {
      * Injects a callback into the start of the onTick() method to process all pending light updates. This is not necessarily
      * required, but we don't want our work queues getting too large.
      *
-     * @author Angeline
+     * @author JellySquid
      */
-    @Inject(method = "tick", at = @At("HEAD"))
+    @Inject(method = "tickChunks", at = @At("HEAD"))
     private void onTick(CallbackInfoReturnable<Boolean> cir) {
-        if (!this.world.disableLevelSaving) {
-            if (!this.droppedChunks.isEmpty()) {
+        if (!this.world.savingDisabled) {
+            if (!this.chunksToUnload.isEmpty()) {
                 ((ILightingEngineProvider) this.world).getLightingEngine().processLightUpdates();
             }
         }

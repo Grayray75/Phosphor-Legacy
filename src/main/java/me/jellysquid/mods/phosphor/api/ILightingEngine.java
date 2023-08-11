@@ -1,12 +1,12 @@
 package me.jellysquid.mods.phosphor.api;
 
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.EnumSkyBlock;
+import net.minecraft.world.LightType;
 
 public interface ILightingEngine {
-    void scheduleLightUpdate(EnumSkyBlock lightType, BlockPos pos);
+    void scheduleLightUpdate(LightType lightType, BlockPos pos);
 
     void processLightUpdates();
 
-    void processLightUpdatesForType(EnumSkyBlock lightType);
+    void processLightUpdatesForType(LightType lightType);
 }

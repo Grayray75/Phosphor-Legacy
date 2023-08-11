@@ -1,136 +1,62 @@
-buildscript {
-    repositories {
-        jcenter()
-
-        maven { url = 'https://repo.spongepowered.org/maven' }
-        maven { url = 'http://files.minecraftforge.net/maven' }
-    }
-
-    dependencies {
-        classpath 'net.minecraftforge.gradle:ForgeGradle:2.3-SNAPSHOT'
-        classpath 'org.spongepowered:mixingradle:0.6-SNAPSHOT'
-    }
+plugins {
+    id "fabric-loom" version "1.3-SNAPSHOT"
+    id "legacy-looming" version "1.3-SNAPSHOT"
+    id "io.github.juuxel.loom-vineflower" version "1.11.0"
+    id "maven-publish"
 }
 
-apply plugin: 'net.minecraftforge.gradle.forge'
-apply plugin: 'org.spongepowered.mixin'
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
 
-group = "me.jellysquid.mods"
+archivesBaseName = project.archives_base_name
+version = "${project.mod_version}+${project.minecraft_version}"
+group = project.maven_group
 
-if (System.getenv("BUILD_NUMBER") != null) {
-    version = "${minecraft_version}-${mod_version}+build${System.getenv("BUILD_NUMBER")}"
-} else {
-    version = "${minecraft_version}-${mod_version}-SNAPSHOT"
-}
-
-compileJava {
-    sourceCompatibility = 1.8
-    targetCompatibility = 1.8
-}
-
-minecraft {
-    version = "${minecraft_version}-${forge_version}"
-    runDir = "run"
-
-    mappings = forge_mappings
-
-    def args = "-Dfml.coreMods.load=me.jellysquid.mods.phosphor.core.PhosphorFMLLoadingPlugin"
-
-    clientJvmArgs += args
-    serverJvmArgs += args
-
-    makeObfSourceJar = false
-}
-
-repositories {
-    maven { url = 'https://repo.spongepowered.org/maven' }
-}
-
-configurations {
-    shade
-    compile.extendsFrom shade
+loom {
+    accessWidenerPath = file("src/main/resources/phosphor.accesswidener")
 }
 
 dependencies {
-    shade('org.spongepowered:mixin:0.8') {
-        transitive = false
-    }
+    // To change the versions see the gradle.properties file
+    minecraft "com.mojang:minecraft:${project.minecraft_version}"
+    mappings legacy.yarn(project.minecraft_version, project.yarn_mappings_build)
+    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+    //modImplementation "net.legacyfabric.legacy-fabric-api:legacy-fabric-api:${project.fabric_version}"
 }
-
-def coreModManifest = {
-    attributes "FMLAT": "phosphor_at.cfg"
-    attributes "Maven-Artifact": "${group}:${name}:${version}"
-    attributes "FMLCorePlugin": "me.jellysquid.mods.phosphor.core.PhosphorFMLLoadingPlugin"
-    attributes "TweakClass": "org.spongepowered.asm.launch.MixinTweaker"
-    attributes "TweakOrder": 0
-    attributes "FMLCorePluginContainsFMLMod": true
-    attributes "ForceLoadAsMod": true
-}
-
-jar {
-    classifier = 'universal'
-
-    manifest coreModManifest
-
-    from sourceSets.main.output
-
-    configurations.shade.each { dep ->
-        from(project.zipTree(dep)) {
-            rename 'LICENSE.txt', 'org/spongepowered/LICENSE.txt'
-
-            exclude 'META-INF/*.SF'
-            exclude 'META-INF/*.RSA'
-            exclude 'META-INF/*.MF'
-
-            exclude '**/*.html'
-        }
-    }
-
-
-    rename '(.+_at.cfg)', 'META-INF/$1'
-}
-
-task sourcesJar(type: Jar, dependsOn: classes) {
-    classifier = 'sources'
-
-    manifest coreModManifest
-
-    from sourceSets.main.allSource
-}
-
-task deobfJar(type: Jar, dependsOn: reobfJar) {
-    classifier = 'dev'
-
-    manifest coreModManifest
-
-    from sourceSets.main.output
-}
-
-import net.minecraftforge.gradle.user.TaskExtractAnnotations
-
-task deobfJarExtractAnnotations(type: TaskExtractAnnotations, dependsOn: deobfJar) {
-    jar = deobfJar.archivePath
-}
-
-deobfJar.finalizedBy deobfJarExtractAnnotations
 
 processResources {
     inputs.property "version", project.version
-    inputs.property "mcversion", project.minecraft.version
 
-    from(sourceSets.main.resources.srcDirs) {
-        include 'mcmod.info'
-
-        expand 'version': project.version, 'mcversion': project.minecraft.version
-    }
-
-    from(sourceSets.main.resources.srcDirs) {
-        exclude 'mcmod.info'
+    filesMatching("fabric.mod.json") {
+        expand "version": project.version
     }
 }
 
-mixin {
-    add sourceSets.main, "mixins.phosphor.refmap.json"
+tasks.withType(JavaCompile).configureEach {
+    it.options.encoding = "UTF-8"
+
+    if (JavaVersion.current().isJava9Compatible()) {
+        it.options.release = 8
+    }
 }
 
-build.dependsOn deobfJar, sourcesJar
+java {
+    withSourcesJar()
+}
+
+jar {
+    from "LICENSE.txt"
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+
+    repositories {
+        // mavenLocal()
+    }
+}

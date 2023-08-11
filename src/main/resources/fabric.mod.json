@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "phosphor",
+  "version": "${version}",
+  "name": "Phosphor",
+  "description": "Phosphor is a free and open-source Minecraft mod aiming to save your CPU cycles and improve performance by optimizing one of Minecraft's most inefficient areas the lighting engine.",
+  "authors": [
+    "JellySquid",
+    "Grayray75"
+  ],
+  "contact": {
+    "homepage": "https://github.com/Grayray75/phosphor-legacy",
+    "sources": "https://github.com/Grayray75/phosphor-legacy",
+    "issues": "https://github.com/Grayray75/phosphor-legacy/issues"
+  },
+  "license": "LGPL-3.0-only",
+  "icon": "assets/phosphor/icon.png",
+  "environment": "*",
+  "entrypoints": {},
+  "mixins": [
+    "phosphor.mixins.json"
+  ],
+  "accessWidener": "phosphor.accesswidener",
+  "depends": {
+    "fabricloader": ">=0.14.0",
+    "minecraft": "1.12.x"
+  }
+}

@@ -1,0 +1,25 @@
+{
+  "required": true,
+  "minVersion": "0.8",
+  "package": "me.jellysquid.mods.phosphor.mixins",
+  "compatibilityLevel": "JAVA_8",
+  "mixins": [
+    "ChunkSectionAccessor",
+    "DirectionAccessor",
+    "PaletteContainerAccessor",
+    "lighting.client.MixinMinecraft",
+    "lighting.common.MixinAnvilChunkLoader",
+    "lighting.common.MixinChunk",
+    "lighting.common.MixinChunk$Vanilla",
+    "lighting.common.MixinChunkProviderServer",
+    "lighting.common.MixinExtendedBlockStorage",
+    "lighting.common.MixinSPacketChunkData",
+    "lighting.common.MixinWorld"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "overwrites": {
+    "conformVisibility": true
+  }
+}

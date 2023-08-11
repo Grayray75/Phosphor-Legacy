@@ -1,27 +1,27 @@
 package me.jellysquid.mods.phosphor.mixins.lighting.common;
 
-import net.minecraft.world.chunk.NibbleArray;
-import net.minecraft.world.chunk.storage.ExtendedBlockStorage;
+import net.minecraft.world.chunk.ChunkNibbleArray;
+import net.minecraft.world.chunk.ChunkSection;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
-@Mixin(ExtendedBlockStorage.class)
+@Mixin(ChunkSection.class)
 public class MixinExtendedBlockStorage {
     @Shadow
-    private NibbleArray skyLight;
+    private ChunkNibbleArray skyLight;
 
     @Shadow
-    private int blockRefCount;
+    private int containedBlockCount;
 
     @Shadow
-    private NibbleArray blockLight;
+    private ChunkNibbleArray blockLight;
 
     private int lightRefCount = -1;
 
     /**
-     * @author Angeline
-     * @author Reset lightRefCount on call
+     * @author JellySquid
+     * @reason Reset lightRefCount on call
      */
     @Overwrite
     public void setSkyLight(int x, int y, int z, int value) {
@@ -30,8 +30,8 @@ public class MixinExtendedBlockStorage {
     }
 
     /**
-     * @author Angeline
-     * @author Reset lightRefCount on call
+     * @author JellySquid
+     * @reason Reset lightRefCount on call
      */
     @Overwrite
     public void setBlockLight(int x, int y, int z, int value) {
@@ -40,33 +40,33 @@ public class MixinExtendedBlockStorage {
     }
 
     /**
-     * @author Angeline
-     * @author Reset lightRefCount on call
+     * @author JellySquid
+     * @reason Reset lightRefCount on call
      */
     @Overwrite
-    public void setBlockLight(NibbleArray array) {
+    public void setBlockLight(ChunkNibbleArray array) {
         this.blockLight = array;
         this.lightRefCount = -1;
     }
 
     /**
-     * @author Angeline
+     * @author JellySquid
      * @reason Reset lightRefCount on call
      */
     @Overwrite
-    public void setSkyLight(NibbleArray array) {
+    public void setSkyLight(ChunkNibbleArray array) {
         this.skyLight = array;
         this.lightRefCount = -1;
     }
 
 
     /**
-     * @author Angeline
+     * @author JellySquid
      * @reason Send light data to clients when lighting is non-trivial
      */
     @Overwrite
     public boolean isEmpty() {
-        if (this.blockRefCount != 0) {
+        if (this.containedBlockCount != 0) {
             return false;
         }
 
@@ -83,12 +83,12 @@ public class MixinExtendedBlockStorage {
         return this.lightRefCount == 0;
     }
 
-    private boolean checkLightArrayEqual(NibbleArray storage, byte val) {
+    private boolean checkLightArrayEqual(ChunkNibbleArray storage, byte val) {
         if (storage == null) {
             return true;
         }
 
-        byte[] arr = storage.getData();
+        byte[] arr = storage.getValue();
 
         for (byte b : arr) {
             if (b != val) {
