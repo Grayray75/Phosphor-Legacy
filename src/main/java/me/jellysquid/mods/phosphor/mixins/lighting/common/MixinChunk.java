@@ -244,7 +244,14 @@ public abstract class MixinChunk implements IChunkLighting, IChunkLightingData, 
             int j = x + facing.getOffsetX();
             int k = z + facing.getOffsetZ();
 
-            max = Math.min(max, slice.getChunkFromWorldCoords(j, k).getMinimumHeightMap());
+            // TODO: revisit this patch!!!
+            Chunk chunk = slice.getChunkFromWorldCoords(j, k);
+            int minHeight = max;
+            if (chunk != null) {
+                minHeight = chunk.getMinimumHeightMap();
+            }
+
+            max = Math.min(max, minHeight);
         }
 
         return max;
