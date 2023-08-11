@@ -1,4 +1,4 @@
-package me.jellysquid.mods.phosphor.mixins.lighting.common;
+package me.jellysquid.mods.phosphor.mixins.common;
 
 import net.minecraft.world.chunk.ChunkNibbleArray;
 import net.minecraft.world.chunk.ChunkSection;
@@ -7,7 +7,7 @@ import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
 @Mixin(ChunkSection.class)
-public class MixinExtendedBlockStorage {
+public class ChunkSectionMixin {
     @Shadow
     private ChunkNibbleArray skyLight;
 

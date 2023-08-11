@@ -1,4 +1,4 @@
-package me.jellysquid.mods.phosphor.mixins.lighting.common;
+package me.jellysquid.mods.phosphor.mixins.common;
 
 import me.jellysquid.mods.phosphor.mod.world.lighting.LightingHooks;
 import net.minecraft.world.World;
@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.Slice;
 
 @Mixin(Chunk.class)
-public abstract class MixinChunk$Vanilla {
+public abstract class ChunkMixin$Vanilla {
     private static final String SET_BLOCK_STATE_VANILLA = "Lnet/minecraft/world/chunk/Chunk;getBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)Lnet/minecraft/block/BlockState;";
 
     @Shadow

@@ -1,4 +1,4 @@
-package me.jellysquid.mods.phosphor.mixins.lighting.common;
+package me.jellysquid.mods.phosphor.mixins.common;
 
 import me.jellysquid.mods.phosphor.api.ILightingEngineProvider;
 import net.minecraft.server.world.ServerWorld;
@@ -13,7 +13,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 import java.util.Set;
 
 @Mixin(ServerChunkProvider.class)
-public abstract class MixinChunkProviderServer {
+public abstract class ServerChunkProviderMixin {
     @Shadow
     @Final
     private ServerWorld world;

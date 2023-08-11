@@ -1,4 +1,4 @@
-package me.jellysquid.mods.phosphor.mixins.lighting.common;
+package me.jellysquid.mods.phosphor.mixins.common;
 
 import me.jellysquid.mods.phosphor.api.ILightingEngineProvider;
 import me.jellysquid.mods.phosphor.mod.world.lighting.LightingEngine;
@@ -12,7 +12,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(World.class)
-public abstract class MixinWorld implements ILightingEngineProvider {
+public abstract class WorldMixin implements ILightingEngineProvider {
     private LightingEngine lightingEngine;
 
     /**

@@ -7,14 +7,14 @@
     "ChunkSectionAccessor",
     "DirectionAccessor",
     "PaletteContainerAccessor",
-    "lighting.client.MixinMinecraft",
-    "lighting.common.MixinAnvilChunkLoader",
-    "lighting.common.MixinChunk",
-    "lighting.common.MixinChunk$Vanilla",
-    "lighting.common.MixinChunkProviderServer",
-    "lighting.common.MixinExtendedBlockStorage",
-    "lighting.common.MixinSPacketChunkData",
-    "lighting.common.MixinWorld"
+    "client.MinecraftClientMixin",
+    "common.ThreadedAnvilChunkStorageMixin",
+    "common.ChunkMixin",
+    "common.ChunkMixin$Vanilla",
+    "common.ServerChunkProviderMixin",
+    "common.ChunkSectionMixin",
+    "common.ChunkDataS2CPacketMixin",
+    "common.WorldMixin"
   ],
   "injectors": {
     "defaultRequire": 1

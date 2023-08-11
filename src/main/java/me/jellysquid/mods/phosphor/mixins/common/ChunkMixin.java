@@ -1,4 +1,4 @@
-package me.jellysquid.mods.phosphor.mixins.lighting.common;
+package me.jellysquid.mods.phosphor.mixins.common;
 
 import me.jellysquid.mods.phosphor.api.IChunkLighting;
 import me.jellysquid.mods.phosphor.api.IChunkLightingData;
@@ -25,7 +25,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(Chunk.class)
-public abstract class MixinChunk implements IChunkLighting, IChunkLightingData, ILightingEngineProvider {
+public abstract class ChunkMixin implements IChunkLighting, IChunkLightingData, ILightingEngineProvider {
     private static final Direction[] HORIZONTAL = Direction.DirectionType.HORIZONTAL.getDirections();
 
     @Shadow
@@ -162,7 +162,7 @@ public abstract class MixinChunk implements IChunkLighting, IChunkLightingData, 
     }
 
     /**
-     * @reason Hook for calculating light updates only as needed. {@link MixinChunk#getCachedLightFor(LightType, BlockPos)} does not
+     * @reason Hook for calculating light updates only as needed. {@link ChunkMixin#getCachedLightFor(LightType, BlockPos)} does not
      * call this hook.
      *
      * @author JellySquid

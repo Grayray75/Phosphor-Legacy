@@ -1,4 +1,4 @@
-package me.jellysquid.mods.phosphor.mixins.lighting.common;
+package me.jellysquid.mods.phosphor.mixins.common;
 
 import me.jellysquid.mods.phosphor.api.IChunkLightingData;
 import me.jellysquid.mods.phosphor.api.ILightingEngineProvider;
@@ -14,7 +14,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ThreadedAnvilChunkStorage.class)
-public abstract class MixinAnvilChunkLoader {
+public abstract class ThreadedAnvilChunkStorageMixin {
     /**
      * Injects into the head of saveChunk() to forcefully process all pending light updates. Fail-safe.
      *
