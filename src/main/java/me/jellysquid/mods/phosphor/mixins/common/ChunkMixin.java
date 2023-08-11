@@ -4,6 +4,7 @@ import me.jellysquid.mods.phosphor.api.IChunkLighting;
 import me.jellysquid.mods.phosphor.api.IChunkLightingData;
 import me.jellysquid.mods.phosphor.api.ILightingEngine;
 import me.jellysquid.mods.phosphor.api.ILightingEngineProvider;
+import me.jellysquid.mods.phosphor.mod.PhosphorMod;
 import me.jellysquid.mods.phosphor.mod.world.WorldChunkSlice;
 import me.jellysquid.mods.phosphor.mod.world.lighting.LightingHooks;
 import net.minecraft.block.BlockState;
@@ -256,7 +257,18 @@ public abstract class ChunkMixin implements IChunkLighting, IChunkLightingData, 
     }
 
     private void checkSkylightNeighborHeight(WorldChunkSlice slice, int x, int z, int maxValue) {
-        int i = slice.getChunkFromWorldCoords(x, z).getHighestBlockY(x & 15, z & 15);
+        if (!slice.isLoaded(x, z, 16)) {
+            return;
+        }
+
+        Chunk chunk = slice.getChunkFromWorldCoords(x, z);
+
+        if (chunk == null) {
+            PhosphorMod.LOGGER.warn("Chunk is null! x: " + x + " z: " + z + " maxValue: " + maxValue);
+            return;
+        }
+
+        int i = chunk.getHighestBlockY(x & 15, z & 15);
 
         if (i > maxValue) {
             this.updateSkylightNeighborHeight(slice, x, z, maxValue, i + 1);
@@ -268,9 +280,9 @@ public abstract class ChunkMixin implements IChunkLighting, IChunkLightingData, 
 
     private void updateSkylightNeighborHeight(WorldChunkSlice slice, int x, int z, int startY, int endY) {
         if (endY > startY) {
-            if (!slice.isLoaded(x, z, 16)) {
+            /*if (!slice.isLoaded(x, z, 16)) {
                 return;
-            }
+            }*/
 
             for (int i = startY; i < endY; ++i) {
                 this.world.method_8539(LightType.SKY, new BlockPos(x, i, z));
