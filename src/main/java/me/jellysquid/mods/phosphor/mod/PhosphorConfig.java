@@ -3,29 +3,19 @@ package me.jellysquid.mods.phosphor.mod;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.annotations.SerializedName;
+import net.fabricmc.loader.api.FabricLoader;
 
 import java.io.*;
 
-// TODO: this is currently not used
 // This class will be initialized very early and should never load any game/mod code.
 public class PhosphorConfig {
-    private static final Gson gson = createGson();
-
-    private static PhosphorConfig INSTANCE;
+    private static final Gson GSON = createGson();
 
     @SerializedName("enable_illegal_thread_access_warnings")
     public boolean enableIllegalThreadAccessWarnings = true;
 
-    @SerializedName("enable_phosphor")
-    public boolean enablePhosphor = true;
-
     public static PhosphorConfig loadConfig() {
-        if (INSTANCE != null) {
-            return INSTANCE;
-        }
-
         File file = getConfigFile();
-
         PhosphorConfig config;
 
         if (!file.exists()) {
@@ -34,42 +24,25 @@ public class PhosphorConfig {
         }
         else {
             try (Reader reader = new FileReader(file)) {
-                config = gson.fromJson(reader, PhosphorConfig.class);
+                config = GSON.fromJson(reader, PhosphorConfig.class);
             } catch (IOException e) {
                 throw new RuntimeException("Failed to deserialize config from disk", e);
             }
         }
 
-        INSTANCE = config;
-
         return config;
     }
 
     public void saveConfig() {
-        File dir = getConfigDirectory();
-
-        if (!dir.exists()) {
-            if (!dir.mkdirs()) {
-                throw new RuntimeException("Could not create configuration directory at '" + dir.getAbsolutePath() + "'");
-            }
-        }
-        else if (!dir.isDirectory()) {
-            throw new RuntimeException("Configuration directory at '" + dir.getAbsolutePath() + "' is not a directory");
-        }
-
         try (Writer writer = new FileWriter(getConfigFile())) {
-            gson.toJson(this, writer);
+            GSON.toJson(this, writer);
         } catch (IOException e) {
             throw new RuntimeException("Failed to serialize config to disk", e);
         }
     }
 
-    private static File getConfigDirectory() {
-        return new File("config");
-    }
-
     private static File getConfigFile() {
-        return new File(getConfigDirectory(), "phosphor.json");
+        return new File(FabricLoader.getInstance().getConfigDir().toString(), "phosphor-legacy.json");
     }
 
     private static Gson createGson() {

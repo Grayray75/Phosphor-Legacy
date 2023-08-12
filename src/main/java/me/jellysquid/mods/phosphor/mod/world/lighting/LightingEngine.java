@@ -3,6 +3,7 @@ package me.jellysquid.mods.phosphor.mod.world.lighting;
 import me.jellysquid.mods.phosphor.api.IChunkLighting;
 import me.jellysquid.mods.phosphor.api.ILightingEngine;
 import me.jellysquid.mods.phosphor.mixins.DirectionAccessor;
+import me.jellysquid.mods.phosphor.mod.PhosphorMod;
 import me.jellysquid.mods.phosphor.mod.collections.PooledLongQueue;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -24,7 +25,7 @@ public class LightingEngine implements ILightingEngine {
 
     private static final int MAX_LIGHT = 15;
 
-    //private final Thread ownedThread = Thread.currentThread();
+    private final Thread ownedThread = Thread.currentThread();
 
     private final World world;
 
@@ -196,12 +197,11 @@ public class LightingEngine implements ILightingEngine {
     private void acquireLock() {
         if (!this.lock.tryLock()) {
             // If we cannot lock, something has gone wrong... Only one thread should ever acquire the lock.
-            // Validate that we're on the right thread immediately so we can gather information.
+            // Validate that we're on the right thread immediately, so we can gather information.
             // It is NEVER valid to call World methods from a thread other than the owning thread of the world instance.
             // Users can safely disable this warning, however it will not resolve the issue.
 
-            /*
-            if (LightingEnginePlugin.ENABLE_ILLEGAL_THREAD_ACCESS_WARNINGS) {
+            if (PhosphorMod.CONFIG.enableIllegalThreadAccessWarnings) {
                 Thread current = Thread.currentThread();
 
                 if (current != this.ownedThread) {
@@ -216,10 +216,8 @@ public class LightingEngine implements ILightingEngine {
                                     " of the current soft warning. You should report this issue to our issue tracker with the following stacktrace information.\n(If you are" +
                                     " aware you have misbehaving mods and cannot resolve this issue, you can safely disable this warning by setting" +
                                     " `enable_illegal_thread_access_warnings` to `false` in Phosphor's configuration file for the time being.)", e);
-
                 }
-
-            }*/
+            }
 
             // Wait for the lock to be released. This will likely introduce unwanted stalls, but will mitigate the issue.
             this.lock.lock();
