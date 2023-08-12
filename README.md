@@ -6,6 +6,20 @@ Currently this just the original 1.12.2 code changed in order to work with fabri
 
 I do plan on backporting this mod to 1.8.9 if thats even possible.
 
+## 📥 Downloads
+
+You can download this mod from:
+* ~~[Modrinth](https://modrinth.com/mod/phosphor-legacy)~~ soon™
+* [GitHub Releases](https://github.com/Grayray75/Phosphor-Legacy/releases)
+
+## 🎲 Supported versions
+
+| Minecraft: | Support: |
+| ---------- | -------- |
+| 1.12.2     | ✔️ Active |
+| 1.8.9      | Panned   |
+
+
 # Phosphor
 
 Phosphor is a free and open-source Minecraft mod aiming to save your CPU cycles and improve performance by optimizing one of Minecraft's most inefficient areas: the lighting engine.
