@@ -2,6 +2,7 @@ plugins {
     id "fabric-loom" version "1.3-SNAPSHOT"
     id "legacy-looming" version "1.3-SNAPSHOT"
     id "io.github.juuxel.loom-vineflower" version "1.11.0"
+    id "com.modrinth.minotaur" version "2.+"
     id "maven-publish"
 }
 
@@ -55,4 +56,18 @@ publishing {
     repositories {
         // mavenLocal()
     }
+}
+
+modrinth {
+    token = ENV.MODRINTH_TOKEN
+
+    projectId = "fLCmgUPa"
+    versionNumber = "${project.mod_version}"
+    versionName = "Phosphor-Legacy v${project.mod_version} (1.12.2)"
+    versionType = "release"
+    changelog = "Initial release"
+
+    uploadFile = remapJar
+    gameVersions = ["1.12.2"]
+    loaders = ["fabric"]
 }
