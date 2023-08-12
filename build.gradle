@@ -58,6 +58,8 @@ publishing {
     }
 }
 
+def ENV = System.getenv()
+
 modrinth {
     token = ENV.MODRINTH_TOKEN
 
