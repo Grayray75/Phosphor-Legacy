@@ -232,14 +232,10 @@ public abstract class ChunkMixin implements IChunkLighting, IChunkLightingData, 
             int j = x + facing.getOffsetX();
             int k = z + facing.getOffsetZ();
 
-            // TODO: revisit this patch!!!
             Chunk chunk = slice.getChunkFromWorldCoords(j, k);
-            int minHeight = max;
             if (chunk != null) {
-                minHeight = chunk.getMinimumHeightMap();
+                max = Math.min(max, chunk.getMinimumHeightMap());
             }
-
-            max = Math.min(max, minHeight);
         }
 
         return max;
@@ -262,7 +258,6 @@ public abstract class ChunkMixin implements IChunkLighting, IChunkLightingData, 
         }
 
         Chunk chunk = slice.getChunkFromWorldCoords(x, z);
-
         if (chunk == null) {
             PhosphorMod.LOGGER.warn("Chunk is null! x: " + x + " z: " + z + " maxValue: " + maxValue);
             return;
@@ -280,10 +275,6 @@ public abstract class ChunkMixin implements IChunkLighting, IChunkLightingData, 
 
     private void updateSkylightNeighborHeight(WorldChunkSlice slice, int x, int z, int startY, int endY) {
         if (endY > startY) {
-            /*if (!slice.isLoaded(x, z, 16)) {
-                return;
-            }*/
-
             for (int i = startY; i < endY; ++i) {
                 this.world.method_8539(LightType.SKY, new BlockPos(x, i, z));
             }
