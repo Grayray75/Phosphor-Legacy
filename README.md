@@ -9,7 +9,7 @@ I do plan on backporting this mod to 1.8.9 if thats even possible.
 ## 📥 Downloads
 
 You can download this mod from:
-* ~~[Modrinth](https://modrinth.com/mod/phosphor-legacy)~~ soon™
+* [Modrinth](https://modrinth.com/mod/phosphor-legacy)
 * [GitHub Releases](https://github.com/Grayray75/Phosphor-Legacy/releases)
 
 ## 🎲 Supported versions
