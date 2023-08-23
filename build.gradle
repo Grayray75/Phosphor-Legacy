@@ -65,11 +65,11 @@ modrinth {
 
     projectId = "fLCmgUPa"
     versionNumber = "${project.mod_version}"
-    versionName = "Phosphor-Legacy v${project.mod_version} (1.12.2)"
-    versionType = "release"
+    versionName = "Phosphor-Legacy v${project.mod_version} (1.8.9)"
+    versionType = "beta"
     changelog = "Initial release"
 
     uploadFile = remapJar
-    gameVersions = ["1.12.2"]
+    gameVersions = ["1.8.9"]
     loaders = ["fabric"]
 }

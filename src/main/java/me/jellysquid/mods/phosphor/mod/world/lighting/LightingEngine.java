@@ -5,6 +5,7 @@ import me.jellysquid.mods.phosphor.api.ILightingEngine;
 import me.jellysquid.mods.phosphor.mixins.DirectionAccessor;
 import me.jellysquid.mods.phosphor.mod.PhosphorMod;
 import me.jellysquid.mods.phosphor.mod.collections.PooledLongQueue;
+import me.jellysquid.mods.phosphor.mod.world.ChunkHelper;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.block.BlockState;
@@ -425,7 +426,7 @@ public class LightingEngine implements ILightingEngine {
         int j = pos.getY();
         int k = pos.getZ() & 15;
 
-        if (section == Chunk.EMPTY) {
+        if (section == null) {
             if (lightType == LightType.SKY && chunk.hasDirectSunlight(pos)) {
                 return lightType.defaultValue;
             }
@@ -434,7 +435,7 @@ public class LightingEngine implements ILightingEngine {
             }
         }
         else if (lightType == LightType.SKY) {
-            if (!chunk.getWorld().dimension.isOverworld()) {
+            if (chunk.getWorld().dimension.isNether()) {
                 return 0;
             }
             else {
@@ -596,15 +597,15 @@ public class LightingEngine implements ILightingEngine {
             }
         }
 
-        return MathHelper.clamp(state.getLuminance(), 0, MAX_LIGHT);
+        return MathHelper.clamp(state.getBlock().getLightLevel(), 0, MAX_LIGHT);
     }
 
     private int getPosOpacity(final BlockPos pos, final BlockState state) {
-        return MathHelper.clamp(state.getOpacity(), 1, MAX_LIGHT);
+        return MathHelper.clamp(state.getBlock().getOpacity(), 1, MAX_LIGHT);
     }
 
     private Chunk getChunk(final BlockPos pos) {
-        return this.world.getChunkProvider().getLoadedChunk(pos.getX() >> 4, pos.getZ() >> 4);
+        return ChunkHelper.getLoadedChunk(this.world.getChunkProvider(),pos.getX() >> 4, pos.getZ() >> 4);
     }
 
     private static class NeighborInfo {

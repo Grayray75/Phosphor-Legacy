@@ -1,7 +1,6 @@
 package me.jellysquid.mods.phosphor.mod.world.lighting;
 
-import me.jellysquid.mods.phosphor.mixins.ChunkSectionAccessor;
-import me.jellysquid.mods.phosphor.mixins.PaletteContainerAccessor;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
@@ -21,11 +20,11 @@ public class LightingEngineHelpers {
         final int y = pos.getY();
         final int z = pos.getZ();
 
-        if (section != Chunk.EMPTY) {
-            int i = ((PaletteContainerAccessor) ((ChunkSectionAccessor) section).getData()).getStorage().get((y & 15) << 8 | (z & 15) << 4 | x & 15);
+        if (section != null) {
+            int key = section.getBlockStates()[(y & 15) << 8 | (z & 15) << 4 | x & 15];
 
-            if (i != 0) {
-                BlockState state = ((PaletteContainerAccessor) ((ChunkSectionAccessor) section).getData()).getPalette().getStateForId(i);
+            if (key != 0) {
+                BlockState state = Block.BLOCK_STATES.fromId(key);
 
                 if (state != null) {
                     return state;

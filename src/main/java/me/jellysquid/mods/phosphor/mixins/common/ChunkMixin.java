@@ -140,7 +140,7 @@ public abstract class ChunkMixin implements IChunkLighting, IChunkLightingData, 
         if (j != i) {
             this.heightmap[z << 4 | x] = j;
 
-            if (this.world.dimension.isOverworld()) {
+            if (!this.world.dimension.isNether()) {
                 LightingHooks.relightSkylightColumn(this.world, (Chunk) (Object) this, x, z, i, j);
             }
 
@@ -335,7 +335,7 @@ public abstract class ChunkMixin implements IChunkLighting, IChunkLightingData, 
 
         ChunkSection section = this.chunkSections[j >> 4];
 
-        if (section == Chunk.EMPTY) {
+        if (section == null) {
             if (this.hasDirectSunlight(pos)) {
                 return lightType.defaultValue;
             }
@@ -346,8 +346,12 @@ public abstract class ChunkMixin implements IChunkLighting, IChunkLightingData, 
         else if (lightType == LightType.SKY) {
             // In Minecraft there is no dimension.hasSkyLight() function, I guess it was added by forge
             // Because this checks if the dimension can see the sky, I guess it looks for the nether and end?
+            //
+            // 1.8.9 Note: isOverworld() doesn't exist here so i'm using !isNether()
+            // It should be noted that isNether() is named wrong it should be hasNoSky (MCP) or so
+            //
             //if (!this.world.dimension.hasSkyLight()) {
-            if (!this.world.dimension.isOverworld()) {
+            if (this.world.dimension.isNether()) {
                 return 0;
             }
             else {

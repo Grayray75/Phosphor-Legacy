@@ -4,10 +4,10 @@ import me.jellysquid.mods.phosphor.api.IChunkLighting;
 import me.jellysquid.mods.phosphor.api.IChunkLightingData;
 import me.jellysquid.mods.phosphor.api.ILightingEngine;
 import me.jellysquid.mods.phosphor.api.ILightingEngineProvider;
-import me.jellysquid.mods.phosphor.mixins.ChunkSectionAccessor;
 import me.jellysquid.mods.phosphor.mixins.DirectionAccessor;
-import me.jellysquid.mods.phosphor.mixins.PaletteContainerAccessor;
 import me.jellysquid.mods.phosphor.mod.PhosphorMod;
+import me.jellysquid.mods.phosphor.mod.world.ChunkHelper;
+import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.nbt.NbtList;
@@ -38,14 +38,14 @@ public class LightingHooks {
 
         scheduleRelightChecksForColumn(world, LightType.SKY, xBase, zBase, yMin, yMax);
 
-        if (sections[yMin >> 4] == Chunk.EMPTY && yMin > 0) {
+        if (sections[yMin >> 4] == null && yMin > 0) {
             world.method_8539(LightType.SKY, new BlockPos(xBase, yMin - 1, zBase));
         }
 
         short emptySections = 0;
 
         for (int sec = yMax >> 4; sec >= yMin >> 4; --sec) {
-            if (sections[sec] == Chunk.EMPTY) {
+            if (sections[sec] == null) {
                 emptySections |= 1 << sec;
             }
         }
@@ -57,7 +57,7 @@ public class LightingHooks {
 
                 final boolean neighborColumnExists = (((x + xOffset) | (z + zOffset)) & 16) == 0
                         //Checks whether the position is at the specified border (the 16 bit is set for both 15+1 and 0-1)
-                        || world.getChunkProvider().getLoadedChunk(chunk.chunkX + xOffset, chunk.chunkZ + zOffset) != null;
+                        || ChunkHelper.getLoadedChunk(world.getChunkProvider(),chunk.chunkX + xOffset, chunk.chunkZ + zOffset) != null;
 
                 if (neighborColumnExists) {
                     for (int sec = yMax >> 4; sec >= yMin >> 4; --sec) {
@@ -124,7 +124,7 @@ public class LightingHooks {
             final int xOffset = dir.getOffsetX();
             final int zOffset = dir.getOffsetZ();
 
-            final Chunk nChunk = world.getChunkProvider().getLoadedChunk(chunk.chunkX + xOffset, chunk.chunkX + zOffset);
+            final Chunk nChunk = ChunkHelper.getLoadedChunk(world.getChunkProvider(), chunk.chunkX + xOffset, chunk.chunkX + zOffset);
 
             if (nChunk == null) {
                 continue;
@@ -183,7 +183,7 @@ public class LightingHooks {
         }
 
         if (nChunk == null) {
-            nChunk = world.getChunkProvider().getLoadedChunk(chunk.chunkX + xOffset, chunk.chunkZ + zOffset);
+            nChunk = ChunkHelper.getLoadedChunk(world.getChunkProvider(),chunk.chunkX + xOffset, chunk.chunkZ + zOffset);
 
             if (nChunk == null) {
                 return;
@@ -191,7 +191,7 @@ public class LightingHooks {
         }
 
         if (sChunk == null) {
-            sChunk = world.getChunkProvider().getLoadedChunk(chunk.chunkX + (zOffset != 0 ? axisDir.offset() : 0), chunk.chunkZ + (xOffset != 0 ? axisDir.offset() : 0));
+            sChunk = ChunkHelper.getLoadedChunk(world.getChunkProvider(),chunk.chunkX + (zOffset != 0 ? axisDir.offset() : 0), chunk.chunkZ + (xOffset != 0 ? axisDir.offset() : 0));
 
             if (sChunk == null) {
                 return; //Cancel, since the checks in the corner columns require the corner column of sChunk
@@ -296,7 +296,7 @@ public class LightingHooks {
         final int xBase = chunk.chunkX << 4;
         final int zBase = chunk.chunkZ << 4;
 
-        final BlockPos.Pooled pos = BlockPos.Pooled.method_12571(xBase, 0, zBase);
+        final BlockPos.Mutable pos = new BlockPos.Mutable(xBase, 0, zBase);
 
         if (world.isRegionLoaded(pos.add(-16, 0, -16), pos.add(31, 255, 31), false)) {
             final ChunkSection[] sections = chunk.getBlockStorage();
@@ -304,7 +304,7 @@ public class LightingHooks {
             for (int j = 0; j < sections.length; ++j) {
                 final ChunkSection section = sections[j];
 
-                if (section == Chunk.EMPTY) {
+                if (section == null) {
                     continue;
                 }
 
@@ -313,13 +313,13 @@ public class LightingHooks {
                 for (int y = 0; y < 16; y++) {
                     for (int z = 0; z < 16; z++) {
                         for (int x = 0; x < 16; x++) {
-                            int key = ((PaletteContainerAccessor) ((ChunkSectionAccessor) section).getData()).getStorage().get(y << 8 | z << 4 | x);
+                            int key = section.getBlockStates()[y << 8 | z << 4 | x];
 
                             if (key != 0) {
-                                BlockState state = ((PaletteContainerAccessor) ((ChunkSectionAccessor) section).getData()).getPalette().getStateForId(key);
+                                BlockState state = Block.BLOCK_STATES.fromId(key);
 
                                 if (state != null) {
-                                    int light = state.getLuminance();
+                                    int light = state.getBlock().getLightLevel();
 
                                     if (light > 0) {
                                         pos.setPosition(xBase + x, yBase + y, zBase + z);
@@ -333,14 +333,12 @@ public class LightingHooks {
                 }
             }
 
-            if (world.dimension.isOverworld()) {
+            if (!world.dimension.isNether()) {
                 ((IChunkLightingData) chunk).setSkylightUpdatedPublic();
             }
 
             ((IChunkLightingData) chunk).setLightInitialized(true);
         }
-
-        pos.method_12576();
     }
 
     public static void checkChunkLighting(final Chunk chunk, final World world) {
@@ -351,7 +349,7 @@ public class LightingHooks {
         for (int x = -1; x <= 1; ++x) {
             for (int z = -1; z <= 1; ++z) {
                 if (x != 0 || z != 0) {
-                    Chunk nChunk = world.getChunkProvider().getLoadedChunk(chunk.chunkX + x, chunk.chunkZ + z);
+                    Chunk nChunk = ChunkHelper.getLoadedChunk(world.getChunkProvider(),chunk.chunkX + x, chunk.chunkZ + z);
 
                     if (nChunk == null || !((IChunkLightingData) nChunk).isLightInitialized()) {
                         return;
@@ -364,7 +362,7 @@ public class LightingHooks {
     }
 
     public static void initSkylightForSection(final World world, final Chunk chunk, final ChunkSection section) {
-        if (world.dimension.isOverworld()) {
+        if (!world.dimension.isNether()) {
             for (int x = 0; x < 16; ++x) {
                 for (int z = 0; z < 16; ++z) {
                     if (chunk.getHighestBlockY(x, z) <= section.getYOffset()) {

@@ -6,19 +6,19 @@ import net.minecraft.world.chunk.Chunk;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
 @Mixin(ChunkDataS2CPacket.class)
 public abstract class ChunkDataS2CPacketMixin {
     /**
-     * Injects a callback into SPacketChunkData#calculateChunkSize(Chunk, booolean, int) to force light updates to be
-     * processed before creating the client payload. We use this method rather than the constructor as it is not valid
-     * to inject elsewhere other than the RETURN of a ctor, which is too late for our needs.
+     * Injects a callback into the constructor of ChunkDataS2CPacketMixin to force light updates to be
+     * processed before creating the client payload.
      *
      * @author JellySquid
      */
-    @Inject(method = "method_12656", at = @At("HEAD"))
-    private void onCalculateChunkSize(Chunk chunkIn, boolean hasSkyLight, int changedSectionFilter, CallbackInfoReturnable<Integer> cir) {
-        ((ILightingEngineProvider) chunkIn).getLightingEngine().processLightUpdates();
+    @Inject(method = "createExtraData", at = @At("HEAD"))
+    private static void onCalculateChunkSize(Chunk chunk, boolean load, boolean notNether, int i, CallbackInfoReturnable<ChunkDataS2CPacket.ExtraData> cir) {
+        ((ILightingEngineProvider) chunk).getLightingEngine().processLightUpdates();
     }
 }

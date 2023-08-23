@@ -2,10 +2,14 @@ package me.jellysquid.mods.phosphor.mixins.common;
 
 import me.jellysquid.mods.phosphor.api.ILightingEngineProvider;
 import net.minecraft.server.world.ServerWorld;
+import net.minecraft.util.ProgressListener;
+import net.minecraft.util.collection.LongObjectStorage;
+import net.minecraft.util.math.ChunkPos;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ServerChunkProvider;
-import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
@@ -15,11 +19,9 @@ import java.util.Set;
 @Mixin(ServerChunkProvider.class)
 public abstract class ServerChunkProviderMixin {
     @Shadow
-    @Final
     private ServerWorld world;
 
     @Shadow
-    @Final
     private Set<Long> chunksToUnload;
 
     /**
@@ -27,8 +29,8 @@ public abstract class ServerChunkProviderMixin {
      *
      * @author JellySquid
      */
-    @Inject(method = "method_12776", at = @At("HEAD"))
-    private void onSaveChunks(boolean all, CallbackInfoReturnable<Boolean> cir) {
+    @Inject(method = "saveChunks", at = @At("HEAD"))
+    private void onSaveChunks(boolean saveEntities, ProgressListener progressListener, CallbackInfoReturnable<Boolean> cir) {
         ((ILightingEngineProvider) this.world).getLightingEngine().processLightUpdates();
     }
 
