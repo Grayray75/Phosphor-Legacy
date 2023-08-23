@@ -4,7 +4,7 @@ import me.jellysquid.mods.phosphor.api.IChunkLighting;
 import me.jellysquid.mods.phosphor.api.IChunkLightingData;
 import me.jellysquid.mods.phosphor.api.ILightingEngine;
 import me.jellysquid.mods.phosphor.api.ILightingEngineProvider;
-import me.jellysquid.mods.phosphor.mixins.DirectionAccessor;
+import me.jellysquid.mods.phosphor.mixins.common.DirectionAccessor;
 import me.jellysquid.mods.phosphor.mod.PhosphorMod;
 import me.jellysquid.mods.phosphor.mod.world.ChunkHelper;
 import net.minecraft.block.Block;

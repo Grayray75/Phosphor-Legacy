@@ -2,9 +2,10 @@ package me.jellysquid.mods.phosphor.mod.world.lighting;
 
 import me.jellysquid.mods.phosphor.api.IChunkLighting;
 import me.jellysquid.mods.phosphor.api.ILightingEngine;
-import me.jellysquid.mods.phosphor.mixins.DirectionAccessor;
+import me.jellysquid.mods.phosphor.mixins.common.DirectionAccessor;
 import me.jellysquid.mods.phosphor.mod.PhosphorMod;
 import me.jellysquid.mods.phosphor.mod.collections.PooledLongQueue;
+import me.jellysquid.mods.phosphor.mod.world.BlockStateHelper;
 import me.jellysquid.mods.phosphor.mod.world.ChunkHelper;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -300,7 +301,7 @@ public class LightingEngine implements ILightingEngine {
                     continue;
                 }
 
-                final BlockState state = LightingEngineHelpers.posToState(this.curPos, this.curChunk);
+                final BlockState state = BlockStateHelper.posToState(this.curPos, this.curChunk);
                 final int luminosity = this.getCursorLuminosity(state, lightType);
                 final int opacity; //if luminosity is high enough, opacity is irrelevant
 
@@ -333,7 +334,7 @@ public class LightingEngine implements ILightingEngine {
 
                         final BlockPos.Mutable nPos = info.pos;
 
-                        if (curLight - this.getPosOpacity(nPos, LightingEngineHelpers.posToState(nPos, info.section)) >= nLight) //schedule neighbor for darkening if we possibly light it
+                        if (curLight - this.getPosOpacity(nPos, BlockStateHelper.posToState(nPos, info.section)) >= nLight) //schedule neighbor for darkening if we possibly light it
                         {
                             this.enqueueDarkening(nPos, info.key, nLight, nChunk, lightType);
                         }
@@ -454,7 +455,7 @@ public class LightingEngine implements ILightingEngine {
 
 
     private int calculateNewLightFromCursor(final LightType lightType) {
-        final BlockState state = LightingEngineHelpers.posToState(this.curPos, this.curChunk);
+        final BlockState state = BlockStateHelper.posToState(this.curPos, this.curChunk);
 
         final int luminosity = this.getCursorLuminosity(state, lightType);
         final int opacity;
@@ -501,7 +502,7 @@ public class LightingEngine implements ILightingEngine {
                 continue;
             }
 
-            final int newLight = curLight - this.getPosOpacity(info.pos, LightingEngineHelpers.posToState(info.pos, info.section));
+            final int newLight = curLight - this.getPosOpacity(info.pos, BlockStateHelper.posToState(info.pos, info.section));
 
             if (newLight > info.light) {
                 this.enqueueBrightening(info.pos, info.key, newLight, nChunk, lightType);

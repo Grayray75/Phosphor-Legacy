@@ -4,8 +4,6 @@ Phosphor-Legacy is port of JellySquid's Phosphor mod to Legacy-Fabric.
 
 Currently this just the original 1.12.2 code changed in order to work with fabric.
 
-I do plan on backporting this mod to 1.8.9 if thats even possible.
-
 ## 📥 Downloads
 
 You can download this mod from:
@@ -14,10 +12,10 @@ You can download this mod from:
 
 ## 🎲 Supported versions
 
-| Minecraft: | Support: |
-| ---------- | -------- |
-| 1.12.2     | ✔️ Active |
-| 1.8.9      | Panned   |
+| Minecraft: | Support:        |
+| ---------- | --------------- |
+| 1.12.2     | ✔️ Active        |
+| 1.8.9      | ✔️ Active (BETA) |
 
 
 # Phosphor

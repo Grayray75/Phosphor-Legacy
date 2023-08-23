@@ -4,11 +4,11 @@
   "package": "me.jellysquid.mods.phosphor.mixins",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "DirectionAccessor",
     "common.ChunkDataS2CPacketMixin",
     "common.ChunkMixin",
     "common.ChunkMixin$Vanilla",
     "common.ChunkSectionMixin",
+    "common.DirectionAccessor",
     "common.ServerChunkProviderAccessor",
     "common.ServerChunkProviderMixin",
     "common.ThreadedAnvilChunkStorageMixin",
