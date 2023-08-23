@@ -1,14 +1,14 @@
-package me.jellysquid.mods.phosphor.mod.world.lighting;
+package me.jellysquid.mods.phosphor.mod.world;
 
-import me.jellysquid.mods.phosphor.mixins.ChunkSectionAccessor;
-import me.jellysquid.mods.phosphor.mixins.PaletteContainerAccessor;
+import me.jellysquid.mods.phosphor.mixins.common.ChunkSectionAccessor;
+import me.jellysquid.mods.phosphor.mixins.common.PaletteContainerAccessor;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkSection;
 
-public class LightingEngineHelpers {
+public class BlockStateHelper {
     private static final BlockState DEFAULT_BLOCK_STATE = Blocks.AIR.getDefaultState();
 
     // Avoids some additional logic in Chunk#getBlockState... 0 is always air

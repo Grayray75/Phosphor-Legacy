@@ -1,4 +1,4 @@
-package me.jellysquid.mods.phosphor.mixins;
+package me.jellysquid.mods.phosphor.mixins.common;
 
 import net.minecraft.util.math.Direction;
 import org.spongepowered.asm.mixin.Mixin;

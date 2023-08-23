@@ -1,4 +1,4 @@
-package me.jellysquid.mods.phosphor.mixins;
+package me.jellysquid.mods.phosphor.mixins.common;
 
 import net.minecraft.world.chunk.palette.Palette;
 import net.minecraft.world.chunk.palette.PaletteContainer;
