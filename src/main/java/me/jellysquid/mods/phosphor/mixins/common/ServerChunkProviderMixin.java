@@ -27,7 +27,7 @@ public abstract class ServerChunkProviderMixin {
      *
      * @author JellySquid
      */
-    @Inject(method = "method_12776", at = @At("HEAD"))
+    @Inject(method = "saveAllChunks", at = @At("HEAD"))
     private void onSaveChunks(boolean all, CallbackInfoReturnable<Boolean> cir) {
         ((ILightingEngineProvider) this.world).getLightingEngine().processLightUpdates();
     }

@@ -17,7 +17,7 @@ public abstract class ChunkDataS2CPacketMixin {
      *
      * @author JellySquid
      */
-    @Inject(method = "method_12656", at = @At("HEAD"))
+    @Inject(method = "getDataSize", at = @At("HEAD"))
     private void onCalculateChunkSize(Chunk chunkIn, boolean hasSkyLight, int changedSectionFilter, CallbackInfoReturnable<Integer> cir) {
         ((ILightingEngineProvider) chunkIn).getLightingEngine().processLightUpdates();
     }

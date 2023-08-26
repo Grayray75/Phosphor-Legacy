@@ -8,7 +8,7 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(PaletteContainer.class)
 public interface PaletteContainerAccessor {
-    @Accessor("paletteData")
+    @Accessor("storage")
     PaletteData getStorage();
 
     @Accessor("palette")

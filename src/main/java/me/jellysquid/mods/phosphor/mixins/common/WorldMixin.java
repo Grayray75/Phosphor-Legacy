@@ -30,7 +30,7 @@ public abstract class WorldMixin implements ILightingEngineProvider {
      *
      * @author JellySquid
      */
-    @Inject(method = "method_8539", at = @At("HEAD"), cancellable = true)
+    @Inject(method = "calculateLightAtPos", at = @At("HEAD"), cancellable = true)
     private void checkLightFor(LightType lightType, BlockPos pos, CallbackInfoReturnable<Boolean> cir) {
         this.lightingEngine.scheduleLightUpdate(lightType, pos);
 

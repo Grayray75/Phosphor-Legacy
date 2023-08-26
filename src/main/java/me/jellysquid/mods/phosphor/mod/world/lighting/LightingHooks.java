@@ -4,7 +4,6 @@ import me.jellysquid.mods.phosphor.api.IChunkLighting;
 import me.jellysquid.mods.phosphor.api.IChunkLightingData;
 import me.jellysquid.mods.phosphor.api.ILightingEngine;
 import me.jellysquid.mods.phosphor.api.ILightingEngineProvider;
-import me.jellysquid.mods.phosphor.mixins.common.ChunkSectionAccessor;
 import me.jellysquid.mods.phosphor.mixins.common.DirectionAccessor;
 import me.jellysquid.mods.phosphor.mixins.common.PaletteContainerAccessor;
 import me.jellysquid.mods.phosphor.mod.PhosphorMod;
@@ -39,7 +38,7 @@ public class LightingHooks {
         scheduleRelightChecksForColumn(world, LightType.SKY, xBase, zBase, yMin, yMax);
 
         if (sections[yMin >> 4] == Chunk.EMPTY && yMin > 0) {
-            world.method_8539(LightType.SKY, new BlockPos(xBase, yMin - 1, zBase));
+            world.calculateLightAtPos(LightType.SKY, new BlockPos(xBase, yMin - 1, zBase));
         }
 
         short emptySections = 0;
@@ -85,7 +84,7 @@ public class LightingHooks {
         BlockPos.Mutable pos = new BlockPos.Mutable();
 
         for (int y = yMin; y <= yMax; ++y) {
-            world.method_8539(lightType, pos.setPosition(x, y, z));
+            world.calculateLightAtPos(lightType, pos.setPosition(x, y, z));
         }
     }
 
@@ -313,10 +312,10 @@ public class LightingHooks {
                 for (int y = 0; y < 16; y++) {
                     for (int z = 0; z < 16; z++) {
                         for (int x = 0; x < 16; x++) {
-                            int key = ((PaletteContainerAccessor) ((ChunkSectionAccessor) section).getData()).getStorage().get(y << 8 | z << 4 | x);
+                            int key = ((PaletteContainerAccessor) section.getBlockData()).getStorage().get(y << 8 | z << 4 | x);
 
                             if (key != 0) {
-                                BlockState state = ((PaletteContainerAccessor) ((ChunkSectionAccessor) section).getData()).getPalette().getStateForId(key);
+                                BlockState state = ((PaletteContainerAccessor) section.getBlockData()).getPalette().getStateForId(key);
 
                                 if (state != null) {
                                     int light = state.getLuminance();
@@ -324,7 +323,7 @@ public class LightingHooks {
                                     if (light > 0) {
                                         pos.setPosition(xBase + x, yBase + y, zBase + z);
 
-                                        world.method_8539(LightType.BLOCK, pos);
+                                        world.calculateLightAtPos(LightType.BLOCK, pos);
                                     }
                                 }
                             }

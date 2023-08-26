@@ -7,7 +7,6 @@
     "common.ChunkDataS2CPacketMixin",
     "common.ChunkMixin",
     "common.ChunkMixin$Vanilla",
-    "common.ChunkSectionAccessor",
     "common.ChunkSectionMixin",
     "common.DirectionAccessor",
     "common.PaletteContainerAccessor",

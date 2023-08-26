@@ -93,12 +93,12 @@ public abstract class ChunkMixin$Vanilla {
             slice = @Slice(
                     from = @At(
                             value = "INVOKE",
-                            target = "Lnet/minecraft/world/chunk/Chunk;method_3917(III)V",
+                            target = "Lnet/minecraft/world/chunk/Chunk;lightBlock(III)V",
                             ordinal = 1
                     ),
                     to = @At(
                             value = "INVOKE",
-                            target = "Lnet/minecraft/world/chunk/Chunk;method_3911(II)V"
+                            target = "Lnet/minecraft/world/chunk/Chunk;setColumnLightOutdated(II)V"
                     )
 
             ),
@@ -125,12 +125,12 @@ public abstract class ChunkMixin$Vanilla {
             slice = @Slice(
                     from = @At(
                             value = "INVOKE",
-                            target = "Lnet/minecraft/world/chunk/Chunk;method_3917(III)V",
+                            target = "Lnet/minecraft/world/chunk/Chunk;lightBlock(III)V",
                             ordinal = 1
                     ),
                     to = @At(
                             value = "INVOKE",
-                            target = "Lnet/minecraft/world/chunk/Chunk;method_3911(II)V"
+                            target = "Lnet/minecraft/world/chunk/Chunk;setColumnLightOutdated(II)V"
                     )
 
             ),

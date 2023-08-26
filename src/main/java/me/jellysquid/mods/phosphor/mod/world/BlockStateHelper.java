@@ -1,6 +1,5 @@
 package me.jellysquid.mods.phosphor.mod.world;
 
-import me.jellysquid.mods.phosphor.mixins.common.ChunkSectionAccessor;
 import me.jellysquid.mods.phosphor.mixins.common.PaletteContainerAccessor;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
@@ -22,10 +21,10 @@ public class BlockStateHelper {
         final int z = pos.getZ();
 
         if (section != Chunk.EMPTY) {
-            int i = ((PaletteContainerAccessor) ((ChunkSectionAccessor) section).getData()).getStorage().get((y & 15) << 8 | (z & 15) << 4 | x & 15);
+            int i = ((PaletteContainerAccessor) section.getBlockData()).getStorage().get((y & 15) << 8 | (z & 15) << 4 | x & 15);
 
             if (i != 0) {
-                BlockState state = ((PaletteContainerAccessor) ((ChunkSectionAccessor) section).getData()).getPalette().getStateForId(i);
+                BlockState state = ((PaletteContainerAccessor) section.getBlockData()).getPalette().getStateForId(i);
 
                 if (state != null) {
                     return state;
