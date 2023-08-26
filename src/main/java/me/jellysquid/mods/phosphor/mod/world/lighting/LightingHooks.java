@@ -39,7 +39,7 @@ public class LightingHooks {
         scheduleRelightChecksForColumn(world, LightType.SKY, xBase, zBase, yMin, yMax);
 
         if (sections[yMin >> 4] == null && yMin > 0) {
-            world.method_8539(LightType.SKY, new BlockPos(xBase, yMin - 1, zBase));
+            world.calculateLightAtPos(LightType.SKY, new BlockPos(xBase, yMin - 1, zBase));
         }
 
         short emptySections = 0;
@@ -85,7 +85,7 @@ public class LightingHooks {
         BlockPos.Mutable pos = new BlockPos.Mutable();
 
         for (int y = yMin; y <= yMax; ++y) {
-            world.method_8539(lightType, pos.setPosition(x, y, z));
+            world.calculateLightAtPos(lightType, pos.setPosition(x, y, z));
         }
     }
 
@@ -324,7 +324,7 @@ public class LightingHooks {
                                     if (light > 0) {
                                         pos.setPosition(xBase + x, yBase + y, zBase + z);
 
-                                        world.method_8539(LightType.BLOCK, pos);
+                                        world.calculateLightAtPos(LightType.BLOCK, pos);
                                     }
                                 }
                             }
@@ -333,7 +333,7 @@ public class LightingHooks {
                 }
             }
 
-            if (!world.dimension.isNether()) {
+            if (!world.dimension.hasNoSkylight()) {
                 ((IChunkLightingData) chunk).setSkylightUpdatedPublic();
             }
 
@@ -362,7 +362,7 @@ public class LightingHooks {
     }
 
     public static void initSkylightForSection(final World world, final Chunk chunk, final ChunkSection section) {
-        if (!world.dimension.isNether()) {
+        if (!world.dimension.hasNoSkylight()) {
             for (int x = 0; x < 16; ++x) {
                 for (int z = 0; z < 16; ++z) {
                     if (chunk.getHighestBlockY(x, z) <= section.getYOffset()) {

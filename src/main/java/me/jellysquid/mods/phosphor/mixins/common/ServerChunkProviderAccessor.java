@@ -8,6 +8,6 @@ import org.spongepowered.asm.mixin.gen.Accessor;
 
 @Mixin(ServerChunkProvider.class)
 public interface ServerChunkProviderAccessor {
-    @Accessor("chunkMap")
+    @Accessor("chunkStorage")
     LongObjectStorage<Chunk> getChunkStorage();
 }

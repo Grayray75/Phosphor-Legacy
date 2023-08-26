@@ -7,8 +7,6 @@ import me.jellysquid.mods.phosphor.api.ILightingEngineProvider;
 import me.jellysquid.mods.phosphor.mod.PhosphorMod;
 import me.jellysquid.mods.phosphor.mod.world.WorldChunkSlice;
 import me.jellysquid.mods.phosphor.mod.world.lighting.LightingHooks;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.entity.BlockEntity;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.Direction;
 import net.minecraft.world.LightType;
@@ -52,7 +50,7 @@ public abstract class ChunkMixin implements IChunkLighting, IChunkLightingData, 
 
     @Final
     @Shadow
-    private boolean[] field_4726;
+    private boolean[] columnSkyLightOutdated;
 
     @Final
     @Shadow
@@ -63,7 +61,7 @@ public abstract class ChunkMixin implements IChunkLighting, IChunkLightingData, 
     public int chunkZ;
 
     @Shadow
-    private boolean field_4742;
+    private boolean isSkyLightOutdated;
 
     @Shadow
     protected abstract int getBlockOpacity(int x, int y, int z);
@@ -125,7 +123,7 @@ public abstract class ChunkMixin implements IChunkLighting, IChunkLightingData, 
      * @author JellySquid
      */
     @Overwrite
-    private void method_3917(int x, int y, int z) {
+    private void lightBlock(int x, int y, int z) {
         int i = this.heightmap[z << 4 | x] & 255;
         int j = i;
 
@@ -140,7 +138,7 @@ public abstract class ChunkMixin implements IChunkLighting, IChunkLightingData, 
         if (j != i) {
             this.heightmap[z << 4 | x] = j;
 
-            if (!this.world.dimension.isNether()) {
+            if (!this.world.dimension.hasNoSkylight()) {
                 LightingHooks.relightSkylightColumn(this.world, (Chunk) (Object) this, x, z, i, j);
             }
 
@@ -180,7 +178,7 @@ public abstract class ChunkMixin implements IChunkLighting, IChunkLightingData, 
      * @author JellySquid
      */
     @Overwrite
-    private void method_6534(boolean onlyOne) {
+    private void recheckSkyLightGaps(boolean onlyOne) {
         this.world.profiler.push("recheckGaps");
 
         WorldChunkSlice slice = new WorldChunkSlice(this.world, this.chunkX, this.chunkZ);
@@ -198,7 +196,7 @@ public abstract class ChunkMixin implements IChunkLighting, IChunkLightingData, 
                 }
             }
 
-            this.field_4742 = false;
+            this.isSkyLightOutdated = false;
         }
 
         this.world.profiler.pop();
@@ -207,8 +205,8 @@ public abstract class ChunkMixin implements IChunkLighting, IChunkLightingData, 
     private boolean recheckGapsForColumn(WorldChunkSlice slice, int x, int z) {
         int i = x + z * 16;
 
-        if (this.field_4726[i]) {
-            this.field_4726[i] = false;
+        if (this.columnSkyLightOutdated[i]) {
+            this.columnSkyLightOutdated[i] = false;
 
             int height = this.getHighestBlockY(x, z);
 
@@ -276,7 +274,7 @@ public abstract class ChunkMixin implements IChunkLighting, IChunkLightingData, 
     private void updateSkylightNeighborHeight(WorldChunkSlice slice, int x, int z, int startY, int endY) {
         if (endY > startY) {
             for (int i = startY; i < endY; ++i) {
-                this.world.method_8539(LightType.SKY, new BlockPos(x, i, z));
+                this.world.calculateLightAtPos(LightType.SKY, new BlockPos(x, i, z));
             }
 
             this.modified = true;
@@ -344,14 +342,7 @@ public abstract class ChunkMixin implements IChunkLighting, IChunkLightingData, 
             }
         }
         else if (lightType == LightType.SKY) {
-            // In Minecraft there is no dimension.hasSkyLight() function, I guess it was added by forge
-            // Because this checks if the dimension can see the sky, I guess it looks for the nether and end?
-            //
-            // 1.8.9 Note: isOverworld() doesn't exist here so i'm using !isNether()
-            // It should be noted that isNether() is named wrong it should be hasNoSky (MCP) or so
-            //
-            //if (!this.world.dimension.hasSkyLight()) {
-            if (this.world.dimension.isNether()) {
+            if (this.world.dimension.hasNoSkylight()) {
                 return 0;
             }
             else {

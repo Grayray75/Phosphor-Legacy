@@ -436,7 +436,7 @@ public class LightingEngine implements ILightingEngine {
             }
         }
         else if (lightType == LightType.SKY) {
-            if (chunk.getWorld().dimension.isNether()) {
+            if (chunk.getWorld().dimension.hasNoSkylight()) {
                 return 0;
             }
             else {
