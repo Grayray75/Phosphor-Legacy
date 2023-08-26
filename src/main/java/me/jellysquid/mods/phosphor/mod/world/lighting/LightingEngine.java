@@ -435,7 +435,7 @@ public class LightingEngine implements ILightingEngine {
             }
         }
         else if (lightType == LightType.SKY) {
-            if (!chunk.getWorld().dimension.isOverworld()) {
+            if (chunk.getWorld().dimension.hasNoSkylight()) {
                 return 0;
             }
             else {

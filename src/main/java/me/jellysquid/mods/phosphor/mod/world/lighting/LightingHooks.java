@@ -332,7 +332,7 @@ public class LightingHooks {
                 }
             }
 
-            if (world.dimension.isOverworld()) {
+            if (!world.dimension.hasNoSkylight()) {
                 ((IChunkLightingData) chunk).setSkylightUpdatedPublic();
             }
 
@@ -363,7 +363,7 @@ public class LightingHooks {
     }
 
     public static void initSkylightForSection(final World world, final Chunk chunk, final ChunkSection section) {
-        if (world.dimension.isOverworld()) {
+        if (!world.dimension.hasNoSkylight()) {
             for (int x = 0; x < 16; ++x) {
                 for (int z = 0; z < 16; ++z) {
                     if (chunk.getHighestBlockY(x, z) <= section.getYOffset()) {
