@@ -1,26 +1,26 @@
 {
-  "required": true,
-  "minVersion": "0.8",
-  "package": "me.jellysquid.mods.phosphor.mixins",
-  "compatibilityLevel": "JAVA_8",
-  "mixins": [
-    "common.ChunkDataS2CPacketMixin",
-    "common.ChunkMixin",
-    "common.ChunkMixin$Vanilla",
-    "common.ChunkSectionMixin",
-    "common.DirectionAccessor",
-    "common.PaletteContainerAccessor",
-    "common.ServerChunkProviderMixin",
-    "common.ThreadedAnvilChunkStorageMixin",
-    "common.WorldMixin"
-  ],
-  "client": [
-    "client.MinecraftClientMixin"
-  ],
-  "injectors": {
-    "defaultRequire": 1
-  },
-  "overwrites": {
-    "conformVisibility": true
-  }
+    "required": true,
+    "minVersion": "0.8",
+    "package": "me.jellysquid.mods.phosphor.mixins",
+    "compatibilityLevel": "JAVA_8",
+    "mixins": [
+        "common.ChunkDataS2CPacketMixin",
+        "common.ChunkMixin",
+        "common.ChunkMixin$Vanilla",
+        "common.ChunkSectionMixin",
+        "common.DirectionAccessor",
+        "common.PaletteContainerAccessor",
+        "common.ServerChunkProviderMixin",
+        "common.ThreadedAnvilChunkStorageMixin",
+        "common.WorldMixin"
+    ],
+    "client": [
+        "client.MinecraftClientMixin"
+    ],
+    "injectors": {
+        "defaultRequire": 1
+    },
+    "overwrites": {
+        "conformVisibility": true
+    }
 }
