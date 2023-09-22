@@ -6,10 +6,7 @@ plugins {
     id "maven-publish"
 }
 
-sourceCompatibility = JavaVersion.VERSION_1_8
-targetCompatibility = JavaVersion.VERSION_1_8
-
-archivesBaseName = project.archives_base_name
+base.archivesName = project.archives_base_name
 version = "${project.mod_version}+${project.minecraft_version}"
 group = project.maven_group
 
@@ -39,6 +36,9 @@ tasks.withType(JavaCompile).configureEach {
 }
 
 java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+
     withSourcesJar()
 }
 
@@ -67,7 +67,6 @@ modrinth {
     versionNumber = "${project.mod_version}"
     versionName = "Phosphor-Legacy v${project.mod_version} (1.8.9)"
     versionType = "beta"
-    changelog = "Initial release"
 
     uploadFile = remapJar
     gameVersions = ["1.8.9"]
