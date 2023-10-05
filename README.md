@@ -1,5 +1,5 @@
 # Phosphor-Legacy
-[![GitHub tag](https://img.shields.io/github/v/tag/Grayray75/Phosphor-Legacy?logo=github&label=Latest%20Release)](https://github.com/Grayray75/Phosphor-Legacy/releases)
+[![GitHub release](https://img.shields.io/github/v/tag/Grayray75/Phosphor-Legacy?logo=github&label=Latest%20Release)](https://github.com/Grayray75/Phosphor-Legacy/releases)
 [![Modrinth downloads](https://img.shields.io/modrinth/dt/fLCmgUPa?logo=modrinth&label=Modrinth&color=00AF5C)](https://modrinth.com/mod/phosphor-legacy)
 
 Phosphor-Legacy is port of JellySquid's Phosphor mod to Legacy-Fabric.
