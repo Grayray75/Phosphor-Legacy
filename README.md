@@ -1,4 +1,6 @@
 # Phosphor-Legacy
+[![GitHub release](https://img.shields.io/github/v/tag/Grayray75/Phosphor-Legacy?logo=github&label=Latest%20Release)](https://github.com/Grayray75/Phosphor-Legacy/releases)
+[![Modrinth downloads](https://img.shields.io/modrinth/dt/fLCmgUPa?logo=modrinth&label=Modrinth&color=00AF5C)](https://modrinth.com/mod/phosphor-legacy)
 
 Phosphor-Legacy is port of JellySquid's Phosphor mod to Legacy-Fabric.
 
@@ -10,13 +12,14 @@ You can download this mod from:
 * [Modrinth](https://modrinth.com/mod/phosphor-legacy)
 * [GitHub Releases](https://github.com/Grayray75/Phosphor-Legacy/releases)
 
-## 🎲 Supported versions
+## 🎲 Version support
 
-| Minecraft: | Support:        |
-| ---------- | --------------- |
-| 1.12.2     | ✔️ Active        |
-| 1.8.9      | ✔️ Active (BETA) |
+| Minecraft version | Latest mod version | Support status                   |
+| ----------------- | ------------------ | -------------------------------- |
+| 1.12.2            | `0.1.3`            | :heavy_check_mark: Active        |
+| 1.8.9             | `0.1.3`            | :heavy_check_mark: Active (BETA) |
 
+<br>
 
 # Phosphor
 
