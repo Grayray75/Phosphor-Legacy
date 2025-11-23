@@ -8,7 +8,6 @@
         "common.ChunkMixin",
         "common.ChunkMixin$Vanilla",
         "common.ChunkSectionMixin",
-        "common.DirectionAccessor",
         "common.PaletteContainerAccessor",
         "common.ServerChunkProviderMixin",
         "common.ThreadedAnvilChunkStorageMixin",

@@ -1,23 +1,23 @@
 package me.jellysquid.mods.phosphor.mod.world;
 
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.WorldChunk;
 
 public class WorldChunkSlice {
     private static final int DIAMETER = 5;
 
-    private final Chunk[] chunks;
+    private final WorldChunk[] chunks;
 
     private final int x, z;
 
     public WorldChunkSlice(World world, int x, int z) {
-        this.chunks = new Chunk[DIAMETER * DIAMETER];
+        this.chunks = new WorldChunk[DIAMETER * DIAMETER];
 
         int radius = DIAMETER / 2;
 
         for (int xDiff = -radius; xDiff <= radius; xDiff++) {
             for (int zDiff = -radius; zDiff <= radius; zDiff++) {
-                this.chunks[((xDiff + radius) * DIAMETER) + (zDiff + radius)] = world.getChunkProvider().getLoadedChunk(x + xDiff, z + zDiff);
+                this.chunks[((xDiff + radius) * DIAMETER) + (zDiff + radius)] = world.getChunkSource().getLoadedChunk(x + xDiff, z + zDiff);
             }
         }
 
@@ -25,11 +25,11 @@ public class WorldChunkSlice {
         this.z = z - radius;
     }
 
-    public Chunk getChunk(int x, int z) {
+    public WorldChunk getChunk(int x, int z) {
         return this.chunks[(x * DIAMETER) + z];
     }
 
-    public Chunk getChunkFromWorldCoords(int x, int z) {
+    public WorldChunk getChunkFromWorldCoords(int x, int z) {
         return this.getChunk((x >> 4) - this.x, (z >> 4) - this.z);
     }
 

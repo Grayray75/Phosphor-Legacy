@@ -5,23 +5,23 @@ import me.jellysquid.mods.phosphor.api.ILightingEngineProvider;
 import me.jellysquid.mods.phosphor.mod.world.lighting.LightingHooks;
 import net.minecraft.nbt.NbtCompound;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.ThreadedAnvilChunkStorage;
+import net.minecraft.world.chunk.WorldChunk;
+import net.minecraft.world.chunk.storage.AnvilChunkStorage;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
-@Mixin(ThreadedAnvilChunkStorage.class)
+@Mixin(AnvilChunkStorage.class)
 public abstract class ThreadedAnvilChunkStorageMixin {
     /**
      * Injects into the head of saveChunk() to forcefully process all pending light updates. Fail-safe.
      *
      * @author JellySquid
      */
-    @Inject(method = "writeChunk", at = @At("HEAD"))
-    private void onConstructed(World world, Chunk chunkIn, CallbackInfo callbackInfo) {
+    @Inject(method = "saveChunk", at = @At("HEAD"))
+    private void onConstructed(World world, WorldChunk chunkIn, CallbackInfo callbackInfo) {
         ((ILightingEngineProvider) world).getLightingEngine().processLightUpdates();
     }
 
@@ -30,9 +30,9 @@ public abstract class ThreadedAnvilChunkStorageMixin {
      *
      * @author JellySquid
      */
-    @Inject(method = "getChunk", at = @At("RETURN"))
-    private void onReadChunkFromNBT(World world, NbtCompound compound, CallbackInfoReturnable<Chunk> cir) {
-        Chunk chunk = cir.getReturnValue();
+    @Inject(method = "createChunkFromNbt", at = @At("RETURN"))
+    private void onReadChunkFromNBT(World world, NbtCompound compound, CallbackInfoReturnable<WorldChunk> cir) {
+        WorldChunk chunk = cir.getReturnValue();
 
         LightingHooks.readNeighborLightChecksFromNBT(chunk, compound);
 
@@ -45,8 +45,8 @@ public abstract class ThreadedAnvilChunkStorageMixin {
      *
      * @author JellySquid
      */
-    @Inject(method = "putChunk", at = @At("RETURN"))
-    private void onWriteChunkToNBT(Chunk chunk, World world, NbtCompound compound, CallbackInfo ci) {
+    @Inject(method = "writeChunkToNbt", at = @At("RETURN"))
+    private void onWriteChunkToNBT(WorldChunk chunk, World world, NbtCompound compound, CallbackInfo ci) {
         LightingHooks.writeNeighborLightChecksToNBT(chunk, compound);
 
         compound.putBoolean("LightPopulated", ((IChunkLightingData) chunk).isLightInitialized());

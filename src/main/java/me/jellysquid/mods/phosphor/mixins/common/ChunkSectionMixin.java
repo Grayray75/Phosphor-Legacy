@@ -1,21 +1,21 @@
 package me.jellysquid.mods.phosphor.mixins.common;
 
-import net.minecraft.world.chunk.ChunkNibbleArray;
-import net.minecraft.world.chunk.ChunkSection;
+import net.minecraft.world.chunk.ChunkNibbleStorage;
+import net.minecraft.world.chunk.WorldChunkSection;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 
-@Mixin(ChunkSection.class)
+@Mixin(WorldChunkSection.class)
 public abstract class ChunkSectionMixin {
     @Shadow
-    private ChunkNibbleArray skyLight;
+    private ChunkNibbleStorage skyLight;
 
     @Shadow
-    private int containedBlockCount;
+    private int nonAirBlockCount;
 
     @Shadow
-    private ChunkNibbleArray blockLight;
+    private ChunkNibbleStorage blockLight;
 
     private int lightRefCount = -1;
 
@@ -44,7 +44,7 @@ public abstract class ChunkSectionMixin {
      * @reason Reset lightRefCount on call
      */
     @Overwrite
-    public void setBlockLight(ChunkNibbleArray array) {
+    public void setBlockLightStorage(ChunkNibbleStorage array) {
         this.blockLight = array;
         this.lightRefCount = -1;
     }
@@ -54,7 +54,7 @@ public abstract class ChunkSectionMixin {
      * @reason Reset lightRefCount on call
      */
     @Overwrite
-    public void setSkyLight(ChunkNibbleArray array) {
+    public void setSkyLightStorage(ChunkNibbleStorage array) {
         this.skyLight = array;
         this.lightRefCount = -1;
     }
@@ -66,7 +66,7 @@ public abstract class ChunkSectionMixin {
      */
     @Overwrite
     public boolean isEmpty() {
-        if (this.containedBlockCount != 0) {
+        if (this.nonAirBlockCount != 0) {
             return false;
         }
 
@@ -83,12 +83,12 @@ public abstract class ChunkSectionMixin {
         return this.lightRefCount == 0;
     }
 
-    private boolean checkLightArrayEqual(ChunkNibbleArray storage, byte val) {
+    private boolean checkLightArrayEqual(ChunkNibbleStorage storage, byte val) {
         if (storage == null) {
             return true;
         }
 
-        byte[] arr = storage.getValue();
+        byte[] arr = storage.getData();
 
         for (byte b : arr) {
             if (b != val) {

@@ -2,8 +2,8 @@ package me.jellysquid.mods.phosphor.mixins.common;
 
 import me.jellysquid.mods.phosphor.mod.world.lighting.LightingHooks;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.Chunk;
-import net.minecraft.world.chunk.ChunkSection;
+import net.minecraft.world.chunk.WorldChunk;
+import net.minecraft.world.chunk.WorldChunkSection;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
@@ -12,9 +12,9 @@ import org.spongepowered.asm.mixin.injection.ModifyVariable;
 import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.Slice;
 
-@Mixin(Chunk.class)
+@Mixin(WorldChunk.class)
 public abstract class ChunkMixin$Vanilla {
-    private static final String SET_BLOCK_STATE_VANILLA = "Lnet/minecraft/world/chunk/Chunk;getBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/BlockState;)Lnet/minecraft/block/BlockState;";
+    private static final String SET_BLOCK_STATE_VANILLA = "Lnet/minecraft/world/chunk/WorldChunk;setBlockState(Lnet/minecraft/util/math/BlockPos;Lnet/minecraft/block/state/BlockState;)Lnet/minecraft/block/state/BlockState;";
 
     @Shadow
     @Final
@@ -30,18 +30,18 @@ public abstract class ChunkMixin$Vanilla {
             method = SET_BLOCK_STATE_VANILLA,
             at = @At(
                     value = "NEW",
-                    args = "class=net/minecraft/world/chunk/ChunkSection"
+                    args = "class=net/minecraft/world/chunk/WorldChunkSection"
             ),
             expect = 0
     )
-    private ChunkSection setBlockStateCreateSectionVanilla(int y, boolean storeSkylight) {
+    private WorldChunkSection setBlockStateCreateSectionVanilla(int y, boolean storeSkylight) {
         return this.initSection(y, storeSkylight);
     }
 
-    private ChunkSection initSection(int y, boolean storeSkylight) {
-        ChunkSection storage = new ChunkSection(y, storeSkylight);
+    private WorldChunkSection initSection(int y, boolean storeSkylight) {
+        WorldChunkSection storage = new WorldChunkSection(y, storeSkylight);
 
-        LightingHooks.initSkylightForSection(this.world, (Chunk) (Object) this, storage);
+        LightingHooks.initSkylightForSection(this.world, (WorldChunk) (Object) this, storage);
 
         return storage;
     }
@@ -62,11 +62,11 @@ public abstract class ChunkMixin$Vanilla {
             slice = @Slice(
                     from = @At(
                             value = "FIELD",
-                            target = "Lnet/minecraft/world/chunk/Chunk;chunkSections:[Lnet/minecraft/world/chunk/ChunkSection;"
+                            target = "Lnet/minecraft/world/chunk/WorldChunk;chunkSections:[Lnet/minecraft/world/chunk/WorldChunkSection;"
                     ),
                     to = @At(
                             value = "INVOKE",
-                            target = "Lnet/minecraft/world/chunk/ChunkSection;setBlockState(IIILnet/minecraft/block/BlockState;)V"
+                            target = "Lnet/minecraft/world/chunk/WorldChunkSection;setBlockState(IIILnet/minecraft/block/state/BlockState;)V"
                     )
 
             ),
@@ -93,12 +93,12 @@ public abstract class ChunkMixin$Vanilla {
             slice = @Slice(
                     from = @At(
                             value = "INVOKE",
-                            target = "Lnet/minecraft/world/chunk/Chunk;lightBlock(III)V",
+                            target = "Lnet/minecraft/world/chunk/WorldChunk;resetLightAt(III)V",
                             ordinal = 1
                     ),
                     to = @At(
                             value = "INVOKE",
-                            target = "Lnet/minecraft/world/chunk/Chunk;setColumnLightOutdated(II)V"
+                            target = "Lnet/minecraft/world/chunk/WorldChunk;queueLightUpdate(II)V"
                     )
 
             ),
@@ -125,12 +125,12 @@ public abstract class ChunkMixin$Vanilla {
             slice = @Slice(
                     from = @At(
                             value = "INVOKE",
-                            target = "Lnet/minecraft/world/chunk/Chunk;lightBlock(III)V",
+                            target = "Lnet/minecraft/world/chunk/WorldChunk;resetLightAt(III)V",
                             ordinal = 1
                     ),
                     to = @At(
                             value = "INVOKE",
-                            target = "Lnet/minecraft/world/chunk/Chunk;setColumnLightOutdated(II)V"
+                            target = "Lnet/minecraft/world/chunk/WorldChunk;queueLightUpdate(II)V"
                     )
 
             ),

@@ -1,73 +1,91 @@
 plugins {
-    id "fabric-loom" version "1.10-SNAPSHOT"
-    id "legacy-looming" version "1.10-SNAPSHOT"
-    id "com.modrinth.minotaur" version "2.+"
-    id "maven-publish"
+	id 'fabric-loom' version '1.11-SNAPSHOT'
+	id "com.modrinth.minotaur" version "2.+"
+	id 'maven-publish'
+	id 'ploceus' version '1.11-SNAPSHOT'
 }
 
-base.archivesName = project.archives_base_name
-version = "${project.mod_version}+${project.minecraft_version}"
+base {
+	archivesName = project.archives_base_name
+}
+version = "${project.version}+mc${project.minecraft_version}"
 group = project.maven_group
 
-dependencies {
-    // To change the versions see the gradle.properties file
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings legacy.yarn(project.minecraft_version, project.yarn_mappings_build)
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+repositories {
+	// Add repositories to retrieve artifacts from in here.
+	// You should only use this when depending on other mods because
+	// Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
+	// See https://docs.gradle.org/current/userguide/declaring_repositories.html
+	// for more information about repositories.
+}
 
-    //modImplementation "net.legacyfabric.legacy-fabric-api:legacy-fabric-api:${project.fabric_version}"
+dependencies {
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	mappings ploceus.featherMappings(project.feather_build)
+	exceptions ploceus.raven(project.raven_build) // remove this line if not using exceptions patches
+	signatures ploceus.sparrow(project.sparrow_build) // remove this line if not using generics patches
+
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 }
 
 processResources {
-    inputs.property "version", project.version
+	inputs.property 'version', version
 
-    filesMatching("fabric.mod.json") {
-        expand "version": project.version
-    }
+	filesMatching('fabric.mod.json') {
+		expand 'version': version
+	}
 }
 
 tasks.withType(JavaCompile).configureEach {
-    it.options.encoding = "UTF-8"
-
-    if (JavaVersion.current().isJava9Compatible()) {
-        it.options.release = 8
-    }
+	it.options.encoding = 'UTF-8'
+	it.options.release = 8
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
+	// Still required by IDEs such as Eclipse and Visual Studio Code
+	sourceCompatibility = JavaVersion.VERSION_1_8
+	targetCompatibility = JavaVersion.VERSION_1_8
 
-    withSourcesJar()
+	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task if it is present.
+	// If you remove this line, sources will not be generated.
+	withSourcesJar()
+
+	// If this mod is going to be a library, then it should also generate Javadocs in order to aid with development.
+	// Uncomment this line to generate them.
+	// withJavadocJar()
 }
 
+// If you plan to use a different file for the license, don't forget to change the file name here!
 jar {
-    from "LICENSE.txt"
+	from('LICENSE') {
+		rename { "${it}_${base.archivesName.get()}" }
+	}
 }
 
+// Configure the maven publication
 publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-        }
-    }
+	publications {
+		mavenJava(MavenPublication) {
+			from components.java
+		}
+	}
 
-    repositories {
-        // mavenLocal()
-    }
-}
+	repositories {
+		// mavenLocal()
+	}
+	
+	def ENV = System.getenv()
 
-def ENV = System.getenv()
+	modrinth {
+	token = ENV.MODRINTH_TOKEN
 
-modrinth {
-    token = ENV.MODRINTH_TOKEN
+	projectId = "fLCmgUPa"
+	versionNumber = "${project.version}"
+	versionName = "Phosphor-Legacy v${project.version} (1.12.2)"
+	versionType = "release"
 
-    projectId = "fLCmgUPa"
-    versionNumber = "${project.mod_version}"
-    versionName = "Phosphor-Legacy v${project.mod_version} (1.12.2)"
-    versionType = "release"
-
-    uploadFile = remapJar
-    gameVersions = ["1.12.2"]
-    loaders = ["legacy-fabric"]
+	uploadFile = remapJar
+	gameVersions = ["1.12.2"]
+	loaders = ["ornithe"]
+	}
 }
