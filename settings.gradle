@@ -1,13 +1,25 @@
 pluginManagement {
     repositories {
+        mavenCentral()
         maven {
-            name = "Fabric"
             url = "https://maven.fabricmc.net/"
         }
         maven {
-            name = "legacy-fabric"
-            url = "https://maven.legacyfabric.net/"
+            url = "https://maven.wagyourtail.xyz/releases"
         }
-        gradlePluginPortal()
+        maven {
+            url = "https://maven.wagyourtail.xyz/snapshots"
+        }
+        gradlePluginPortal() {
+            content {
+                excludeGroup("org.apache.logging.log4j")
+            }
+        }
     }
 }
+
+plugins {
+    id("org.gradle.toolchains.foojay-resolver-convention") version "0.8.0"
+}
+
+rootProject.name = 'Phosphor-Legacy'

@@ -1,6 +1,5 @@
 plugins {
-    id "fabric-loom" version "1.10-SNAPSHOT"
-    id "legacy-looming" version "1.10-SNAPSHOT"
+    id "xyz.wagyourtail.unimined" version "1.4.1"
     id "com.modrinth.minotaur" version "2.+"
     id "maven-publish"
 }
@@ -9,65 +8,90 @@ base.archivesName = project.archives_base_name
 version = "${project.mod_version}+${project.minecraft_version}"
 group = project.maven_group
 
-dependencies {
-    // To change the versions see the gradle.properties file
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings legacy.yarn(project.minecraft_version, project.yarn_mappings_build)
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+// this is just here so we can test the outputs easier and clean between tests
+unimined.useGlobalCache = false
 
-    //modImplementation "net.legacyfabric.legacy-fabric-api:legacy-fabric-api:${project.fabric_version}"
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+    sourceCompatibility = JavaVersion.VERSION_1_8
 }
 
-processResources {
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = "UTF-8"
+    options.release = 8
+}
+
+repositories {
+    mavenCentral()
+    maven {
+        name = "sponge"
+        url = "https://repo.spongepowered.org/maven"
+    }
+    maven {
+        url = "https://maven.fabricmc.net/"
+    }
+}
+
+sourceSets {
+    fabric {
+        compileClasspath += sourceSets.main.output
+        runtimeClasspath += sourceSets.main.output
+    }
+}
+
+unimined.minecraft {
+    version project.minecraft_version
+
+    mappings {
+        legacyIntermediary()
+        legacyYarn("576")
+    }
+
+    fabric {
+        loader project.loader_version
+    }
+
+    defaultRemapJar = false
+}
+
+unimined.minecraft(sourceSets.fabric) {
+    combineWith(sourceSets.main)
+
+    legacyFabric {
+        loader project.loader_version
+    }
+
+    ornitheFabric {
+        loader project.loader_version
+    }
+
+    defaultRemapJar = true
+}
+
+configurations {
+    mainImplementation
+    implementation {
+        extendsFrom fabricImplementation
+    }
+}
+
+sourceSets {
+    main {
+        compileClasspath += configurations.mainImplementation
+        runtimeClasspath += configurations.mainImplementation
+    }
+}
+
+jar {
+    enabled = false
+}
+
+processFabricResources {
     inputs.property "version", project.version
 
     filesMatching("fabric.mod.json") {
         expand "version": project.version
     }
-}
-
-tasks.withType(JavaCompile).configureEach {
-    it.options.encoding = "UTF-8"
-
-    if (JavaVersion.current().isJava9Compatible()) {
-        it.options.release = 8
-    }
-}
-
-java {
-    sourceCompatibility = JavaVersion.VERSION_1_8
-    targetCompatibility = JavaVersion.VERSION_1_8
-
-    withSourcesJar()
-}
-
-jar {
-    from "LICENSE.txt"
-}
-
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-        }
-    }
-
-    repositories {
-        // mavenLocal()
-    }
-}
-
-def ENV = System.getenv()
-
-modrinth {
-    token = ENV.MODRINTH_TOKEN
-
-    projectId = "fLCmgUPa"
-    versionNumber = "${project.mod_version}"
-    versionName = "Phosphor-Legacy v${project.mod_version} (1.12.2)"
-    versionType = "release"
-
-    uploadFile = remapJar
-    gameVersions = ["1.12.2"]
-    loaders = ["legacy-fabric"]
 }
