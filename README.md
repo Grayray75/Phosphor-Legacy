@@ -16,8 +16,8 @@ You can download this mod from:
 
 | Minecraft version | Latest mod version | Support status                   |
 | ----------------- | ------------------ | -------------------------------- |
-| 1.12.2            | `0.1.3`            | :heavy_check_mark: Active        |
-| 1.8.9             | `0.1.3`            | :heavy_check_mark: Active (BETA) |
+| 1.12.2            | `0.1.5`            | :heavy_check_mark: Active        |
+| 1.8.9             | `0.1.5`            | :heavy_check_mark: Active (BETA) |
 
 <br>
 
