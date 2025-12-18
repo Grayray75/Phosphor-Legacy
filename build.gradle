@@ -23,17 +23,6 @@ tasks.withType(JavaCompile).configureEach {
     options.release = 8
 }
 
-repositories {
-    mavenCentral()
-    maven {
-        name = "sponge"
-        url = "https://repo.spongepowered.org/maven"
-    }
-    maven {
-        url = "https://maven.fabricmc.net/"
-    }
-}
-
 sourceSets {
     fabric {
         compileClasspath += sourceSets.main.output
@@ -60,10 +49,6 @@ unimined.minecraft(sourceSets.fabric) {
     combineWith(sourceSets.main)
 
     legacyFabric {
-        loader project.loader_version
-    }
-
-    ornitheFabric {
         loader project.loader_version
     }
 
