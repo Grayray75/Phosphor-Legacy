@@ -1,6 +1,6 @@
 plugins {
     id "xyz.wagyourtail.unimined" version "1.4.1"
-    id "com.modrinth.minotaur" version "2.+"
+    id "me.modmuss50.mod-publish-plugin" version "1.1.0"
 }
 
 base.archivesName = project.archives_base_name
@@ -19,7 +19,7 @@ unimined.minecraft {
 
     mappings {
         legacyIntermediary()
-        legacyYarn("576")
+        legacyYarn(project.yarn_mappings_build)
     }
 
     fabric {
@@ -69,4 +69,34 @@ java {
 
 jar {
     enabled = false
+}
+
+publishMods {
+    type = ALPHA
+    changelog = "A changelog can be found at https://github.com/Grayray75/Phosphor-Legacy/releases"
+
+    def baseOptions = modrinthOptions {
+        accessToken = providers.environmentVariable("MODRINTH_TOKEN")
+        projectId = "fLCmgUPa"
+        minecraftVersions.add(project.minecraft_version)
+    }
+
+    modrinth("modrinthFabric") {
+        from baseOptions
+
+        file.set(tasks.named("remapFabricJar").flatMap { it.archiveFile })
+        displayName = "v${project.mod_version} (${project.minecraft_version}) [LegacyFabric]"
+
+        modLoaders.add("fabric")
+        modLoaders.add("legacy-fabric")
+    }
+
+    modrinth("modrinthOrnithe") {
+        from baseOptions
+
+        file.set(tasks.named("remapOrnitheJar").flatMap { it.archiveFile })
+        displayName = "v${project.mod_version} (${project.minecraft_version}) [Ornithe]"
+
+        modLoaders.add("ornithe")
+    }
 }
