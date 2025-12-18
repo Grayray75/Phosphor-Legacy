@@ -1,33 +1,17 @@
 plugins {
     id "xyz.wagyourtail.unimined" version "1.4.1"
     id "com.modrinth.minotaur" version "2.+"
-    id "maven-publish"
 }
 
 base.archivesName = project.archives_base_name
 version = "${project.mod_version}+${project.minecraft_version}"
 group = project.maven_group
 
-// this is just here so we can test the outputs easier and clean between tests
 unimined.useGlobalCache = false
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
-    sourceCompatibility = JavaVersion.VERSION_1_8
-}
-
-tasks.withType(JavaCompile).configureEach {
-    options.encoding = "UTF-8"
-    options.release = 8
-}
-
 sourceSets {
-    fabric {
-        compileClasspath += sourceSets.main.output
-        runtimeClasspath += sourceSets.main.output
-    }
+    fabric
+    ornithe
 }
 
 unimined.minecraft {
@@ -55,22 +39,14 @@ unimined.minecraft(sourceSets.fabric) {
     defaultRemapJar = true
 }
 
-configurations {
-    mainImplementation
-    implementation {
-        extendsFrom fabricImplementation
-    }
-}
+unimined.minecraft(sourceSets.ornithe) {
+    combineWith(sourceSets.main)
 
-sourceSets {
-    main {
-        compileClasspath += configurations.mainImplementation
-        runtimeClasspath += configurations.mainImplementation
+    ornitheFabric {
+        loader project.loader_version
     }
-}
 
-jar {
-    enabled = false
+    defaultRemapJar = true
 }
 
 processFabricResources {
@@ -79,4 +55,18 @@ processFabricResources {
     filesMatching("fabric.mod.json") {
         expand "version": project.version
     }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = "UTF-8"
+    options.release = 8
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_1_8
+    targetCompatibility = JavaVersion.VERSION_1_8
+}
+
+jar {
+    enabled = false
 }
