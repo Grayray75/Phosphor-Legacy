@@ -1,24 +1,55 @@
 plugins {
-    id "fabric-loom" version "1.10-SNAPSHOT"
-    id "legacy-looming" version "1.10-SNAPSHOT"
-    id "com.modrinth.minotaur" version "2.+"
-    id "maven-publish"
+    id "xyz.wagyourtail.unimined" version "1.4.1"
+    id "me.modmuss50.mod-publish-plugin" version "1.1.0"
 }
 
 base.archivesName = project.archives_base_name
 version = "${project.mod_version}+${project.minecraft_version}"
 group = project.maven_group
 
-dependencies {
-    // To change the versions see the gradle.properties file
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings legacy.yarn(project.minecraft_version, project.yarn_mappings_build)
-    modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+unimined.useGlobalCache = false
 
-    //modImplementation "net.legacyfabric.legacy-fabric-api:legacy-fabric-api:${project.fabric_version}"
+sourceSets {
+    fabric
+    ornithe
 }
 
-processResources {
+unimined.minecraft {
+    version project.minecraft_version
+
+    mappings {
+        legacyIntermediary()
+        legacyYarn(project.yarn_mappings_build)
+    }
+
+    fabric {
+        loader project.loader_version
+    }
+
+    defaultRemapJar = false
+}
+
+unimined.minecraft(sourceSets.fabric) {
+    combineWith(sourceSets.main)
+
+    legacyFabric {
+        loader project.loader_version
+    }
+
+    defaultRemapJar = true
+}
+
+unimined.minecraft(sourceSets.ornithe) {
+    combineWith(sourceSets.main)
+
+    ornitheFabric {
+        loader project.loader_version
+    }
+
+    defaultRemapJar = true
+}
+
+processFabricResources {
     inputs.property "version", project.version
 
     filesMatching("fabric.mod.json") {
@@ -27,47 +58,50 @@ processResources {
 }
 
 tasks.withType(JavaCompile).configureEach {
-    it.options.encoding = "UTF-8"
+    options.encoding = "UTF-8"
+    options.release = 8
+}
 
-    if (JavaVersion.current().isJava9Compatible()) {
-        it.options.release = 8
-    }
+tasks.withType(Jar).configureEach {
+    from "LICENSE.txt"
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
-
-    withSourcesJar()
 }
 
 jar {
-    from "LICENSE.txt"
+    enabled = false
 }
 
-publishing {
-    publications {
-        mavenJava(MavenPublication) {
-            from components.java
-        }
+publishMods {
+    type = project.mod_version_type
+    changelog = "A changelog can be found at https://github.com/Grayray75/Phosphor-Legacy/releases"
+
+    def baseOptions = modrinthOptions {
+        accessToken = providers.environmentVariable("MODRINTH_TOKEN")
+        projectId = "fLCmgUPa"
+        minecraftVersions.add(project.minecraft_version)
     }
 
-    repositories {
-        // mavenLocal()
+    modrinth("modrinthFabric") {
+        from baseOptions
+
+        file.set(tasks.named("remapFabricJar").flatMap { it.archiveFile })
+        displayName = "v${project.mod_version} (${project.minecraft_version}) [LegacyFabric]"
+
+        modLoaders.add("fabric")
+        modLoaders.add("legacy-fabric")
     }
-}
 
-def ENV = System.getenv()
+    modrinth("modrinthOrnithe") {
+        from baseOptions
 
-modrinth {
-    token = ENV.MODRINTH_TOKEN
+        file.set(tasks.named("remapOrnitheJar").flatMap { it.archiveFile })
+        displayName = "v${project.mod_version} (${project.minecraft_version}) [Ornithe]"
 
-    projectId = "fLCmgUPa"
-    versionNumber = "${project.mod_version}"
-    versionName = "Phosphor-Legacy v${project.mod_version} (1.12.2)"
-    versionType = "release"
-
-    uploadFile = remapJar
-    gameVersions = ["1.12.2"]
-    loaders = ["legacy-fabric"]
+        modLoaders.add("ornithe")
+    }
 }
