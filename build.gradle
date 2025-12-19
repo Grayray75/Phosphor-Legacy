@@ -62,6 +62,11 @@ tasks.withType(JavaCompile).configureEach {
     options.release = 8
 }
 
+tasks.withType(Jar).configureEach {
+    from "LICENSE.txt"
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
 java {
     sourceCompatibility = JavaVersion.VERSION_1_8
     targetCompatibility = JavaVersion.VERSION_1_8
@@ -72,7 +77,7 @@ jar {
 }
 
 publishMods {
-    type = ALPHA
+    type = project.mod_version_type
     changelog = "A changelog can be found at https://github.com/Grayray75/Phosphor-Legacy/releases"
 
     def baseOptions = modrinthOptions {
